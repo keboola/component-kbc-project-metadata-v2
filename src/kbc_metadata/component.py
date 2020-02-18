@@ -21,6 +21,7 @@ KEY_GET_ALL_CONFIGURATIONS = 'get_all_configurations'
 KEY_GET_TOKENS = 'get_tokens'
 KEY_GET_ORCHESTRATIONS = 'get_orchestrations'
 KEY_GET_WAITING_JOBS = 'get_waiting_jobs'
+KEY_GET_TABLES = 'get_tables'
 
 
 class ComponentWriters:
@@ -38,7 +39,7 @@ class MetadataComponent(KBCEnvHandler):
         self.paramTokens = self.cfg_params[KEY_TOKENS]
         self.paramMasterToken = self.cfg_params[KEY_MASTERTOKEN]
         self.paramDatasets = self.cfg_params[KEY_DATASETS]
-        self.paramIncremental = self.cfg_params.get(KEY_INCREMENTAL, True)
+        self.paramIncremental = bool(self.cfg_params.get(KEY_INCREMENTAL, False))
 
         self.client = MetadataClient()
         self.paramClient = self.determineToken()
@@ -88,21 +89,53 @@ class MetadataComponent(KBCEnvHandler):
         if self.paramDatasets.get(KEY_GET_TOKENS) is True:
             self.writer.tokens = MetadataWriter(self.tables_out_path, 'tokens', self.paramIncremental)
 
+        if self.paramDatasets.get(KEY_GET_ALL_CONFIGURATIONS) is True:
+            self.writer.configurations = MetadataWriter(self.tables_out_path, 'configurations', self.paramIncremental)
+
+        if self.paramDatasets.get(KEY_GET_TABLES) is True:
+            self.writer.tables = MetadataWriter(self.tables_out_path, 'tables', self.paramIncremental)
+            self.writer.tables_metadata = MetadataWriter(self.tables_out_path, 'tables-metadata', self.paramIncremental)
+
     def getDataForProject(self, prjId, prjToken, prjRegion):
 
         self.client.initStorageAndSyrup(prjRegion, prjToken, prjId)
+        p_dict = {'region': prjRegion, 'project_id': prjId}
 
         if self.paramDatasets.get(KEY_GET_ORCHESTRATIONS) is True:
             orch = self.client.syrup.getOrchestrations()
-            self.writer.orchestrations.writerows(orch, parentDict={'region': prjRegion})
+            self.writer.orchestrations.writerows(orch, parentDict=p_dict)
 
         if self.paramDatasets.get(KEY_GET_WAITING_JOBS) is True:
             jobs = self.client.syrup.getWaitingAndProcessingJobs()
-            self.writer.waiting_jobs.writerows(jobs, parentDict={'region': prjRegion})
+            self.writer.waiting_jobs.writerows(jobs, parentDict=p_dict)
 
         if self.paramDatasets.get(KEY_GET_TOKENS) is True:
             tokens = self.client.storage.getTokens()
-            self.writer.tokens.writerows(tokens, parentDict={'region': prjRegion})
+            self.writer.tokens.writerows(tokens, parentDict=p_dict)
+
+        if self.paramDatasets.get(KEY_GET_ALL_CONFIGURATIONS) is True:
+            configs = self.client.storage.getAllConfigurations()
+
+            for comp in configs:
+                cfg = {}
+                cfg['component_id'] = comp['id']
+                cfg['component_type'] = comp['type']
+                cfg['component_name'] = comp['name']
+                cfg = {**cfg, **p_dict}
+
+                self.writer.configurations.writerows(comp['configurations'], parentDict=cfg)
+
+        if self.paramDatasets.get(KEY_GET_TABLES) is True:
+            tables = self.client.storage.getAllTables()
+            for t in tables:
+                t['primaryKey'] = ','.join(t['primaryKey'])
+                cfg = {}
+                cfg['table_id'] = t['id']
+                cfg = {**cfg, **p_dict}
+
+                self.writer.tables_metadata.writerows(t['metadata'], parentDict=cfg)
+
+            self.writer.tables.writerows(tables, parentDict=p_dict)
 
     def run(self):
 

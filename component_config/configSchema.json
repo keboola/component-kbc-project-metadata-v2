@@ -104,31 +104,43 @@
           "get_tokens": {
             "type": "boolean",
             "format": "checkbox",
-            "title": "Get Token  details",
+            "title": "Get Tokens",
             "propertyOrder": 2000
           },
           "get_orchestrations": {
             "type": "boolean",
             "format": "checkbox",
-            "title": "Get Orchestration details",
+            "title": "Get Orchestrations",
             "propertyOrder": 2500
           },
           "get_waiting_jobs": {
             "type": "boolean",
             "format": "checkbox",
             "title": "Get Waiting Jobs",
-            "propertyOrder": 2500
+            "propertyOrder": 3000
+          },
+          "get_tables": {
+            "type": "boolean",
+            "format": "checkbox",
+            "title": "Get Tables",
+            "propertyOrder": 3500
+          },
+          "get_all_configurations": {
+            "type": "boolean",
+            "format": "checkbox",
+            "title": "Get All Configurations",
+            "propertyOrder": 4000
           }
         }
       },
       "incremental_load": {
-          "type": "boolean",
+          "type": "number",
           "enum": [
-              true,
-              false
+              1,
+              0
           ],
-          "description": "Load Type",
-          "default": true,
+          "title": "Load Type",
+          "default": 1,
           "options": {
               "enum_titles":["Incremental Load", "Full Load"]
           }
