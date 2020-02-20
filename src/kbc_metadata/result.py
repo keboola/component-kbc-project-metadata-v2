@@ -57,6 +57,41 @@ FIELDS_R_TABLES_METADATA = FIELDS_TABLES_METADATA
 PK_TABLES_METADATA = ['id', 'table_id', 'region', 'project_id']
 JSON_TABLES_METADATA = []
 
+FIELDS_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id', 'name', 'version', 'created', 'creatorToken_id',
+                                  'creatorToken_description', 'changeDescription', 'currentVersion_created',
+                                  'currentVersion_creatorToken_id', 'currentVersion_creatorToken_description']
+FIELDS_R_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id', 'name', 'version', 'created', 'creator_token_id',
+                                    'creator_token_description', 'change_description', 'current_version_created',
+                                    'current_version_creator_token_id', 'current_version_creator_token_description']
+PK_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id']
+JSON_TRANSFORMATIONS_BUCKETS = []
+
+FIELDS_TRANSFORMATIONS = ['id', 'region', 'project_id', 'bucket_id', 'name', 'configuration_packages',
+                          'configuration_requires', 'configuration_backend', 'configuration_type',
+                          'configuration_phase', 'configuration_disabled', 'version', 'created',
+                          'creatorToken_id', 'creatorToken_description', 'changeDescription']
+FIELDS_R_TRANSFORMATIONS = ['id', 'region', 'project_id', 'bucket_id', 'name', 'packages', 'requires', 'backend',
+                            'type', 'phase', 'disabled', 'version', 'created', 'creator_token_id',
+                            'creator_token_description', 'change_description']
+PK_TRANSFORMATIONS = ['id', 'region', 'project_id']
+JSON_TRANSFORMATIONS = []
+
+FIELDS_TRANSFORMATIONS_INPUTS = ['transformation_id', 'region', 'source', 'destination', 'loadType',
+                                 'whereColumn', 'whereValues', 'whereOperator', 'changedSince', 'columns']
+FIELDS_R_TRANSFORMATIONS_INPUTS = ['transformation_id', 'region', 'source', 'destination', 'load_type',
+                                   'filter_where_column', 'filter_where_values', 'filter_where_operator',
+                                   'filter_changed_since', 'input_columns']
+PK_TRANSFORMATIONS_INPUTS = ['transformation_id', 'region', 'source', 'destination']
+JSON_TRANSFORMATIONS_INPUTS = []
+
+FIELDS_TRANSFORMATIONS_OUTPUTS = ['transformation_id', 'region', 'destination', 'source', 'primaryKey',
+                                  'incremental', 'deleteWhereColumn', 'deleteWhereOperator', 'deleteWhereValues']
+FIELDS_R_TRANSFORMATIONS_OUTPUTS = ['transformation_id', 'region', 'destination', 'source', 'primary_key',
+                                    'incremental_load', 'delete_where_column', 'delete_where_operator',
+                                    'delete_where_values']
+PK_TRANSFORMATIONS_OUTPUTS = ['transformation_id', 'region', 'destination', 'source']
+JSON_TRANSFORMATIONS_OUTPUTS = []
+
 
 class MetadataWriter:
 

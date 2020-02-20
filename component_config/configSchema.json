@@ -2,148 +2,158 @@
     "type": "object",
     "title": "App configuration",
     "required": [
-      "tokens",
-      "master_token",
-      "datasets",
-      "incremental_load"
+        "tokens",
+        "master_token",
+        "datasets",
+        "incremental_load"
     ],
     "properties": {
-      "tokens": {
-        "type": "array",
-        "title": "List of Storage tokens",
-        "description": "List of Storage tokens, defining the projects that will be scanned. Transformation Component and Storage access needed.",
-        "items": {
-          "format": "grid",
-          "type": "object",
-          "title": "Token",
-          "required": [
-            "#key",
-            "region"
-          ],
-          "properties": {
-            "#key": {
-              "type": "string",
-              "format": "password",
-              "title": "Token Key",
-              "propertyOrder": 1000
-            },
-            "region": {
-              "enum": [
-                "eu-central-1",
-                "us-east-1"
-              ],
-              "options": {
-                "enum_titles": [
-                  "EU",
-                  "US"
-                ]
-              },
-              "type": "string",
-              "title": "Project region",
-              "default": "EU",
-              "propertyOrder": 2000
+        "tokens": {
+            "type": "array",
+            "title": "List of Storage tokens",
+            "description": "List of Storage tokens, defining the projects that will be scanned. Transformation Component and Storage access needed.",
+            "items": {
+                "format": "grid",
+                "type": "object",
+                "title": "Token",
+                "required": [
+                    "#key",
+                    "region"
+                ],
+                "properties": {
+                    "#key": {
+                        "type": "string",
+                        "format": "password",
+                        "title": "Token Key",
+                        "propertyOrder": 1000
+                    },
+                    "region": {
+                        "enum": [
+                            "eu-central-1",
+                            "us-east-1"
+                        ],
+                        "options": {
+                            "enum_titles": [
+                                "EU",
+                                "US"
+                            ]
+                        },
+                        "type": "string",
+                        "title": "Project region",
+                        "default": "EU",
+                        "propertyOrder": 2000
+                    }
+                }
             }
-          }
-        }
-      },
-      "master_token": {
-        "type": "array",
-        "propertyOrder": 100,
-        "title": "Master token",
-        "description": "Set master token to analyze all project available in the organization. Note that this overrides any tokens explicitly specified in the List of Storage tokens section.",
-        "maxItems": 1,
-        "items": {
-          "format": "grid",
-          "type": "object",
-          "title": "Token",
-          "required": [
-            "#token",
-            "org_id",
-            "region"
-          ],
-          "properties": {
-            "#token": {
-              "type": "string",
-              "format": "password",
-              "title": "Token Key",
-              "propertyOrder": 1000
-            },
-            "org_id": {
-              "type": "string",
-              "title": "Organization id",
-              "propertyOrder": 1200
-            },
-            "region": {
-              "enum": [
-                "eu-central-1",
-                "us-east-1"
-              ],
-              "options": {
-                "enum_titles": [
-                  "EU",
-                  "US"
-                ]
-              },
-              "type": "string",
-              "title": "Project region",
-              "default": "EU",
-              "propertyOrder": 2000
+        },
+        "master_token": {
+            "type": "array",
+            "propertyOrder": 100,
+            "title": "Master token",
+            "description": "Set master token to analyze all project available in the organization. Note that this overrides any tokens explicitly specified in the List of Storage tokens section.",
+            "maxItems": 1,
+            "items": {
+                "format": "grid",
+                "type": "object",
+                "title": "Token",
+                "required": [
+                    "#token",
+                    "org_id",
+                    "region"
+                ],
+                "properties": {
+                    "#token": {
+                        "type": "string",
+                        "format": "password",
+                        "title": "Token Key",
+                        "propertyOrder": 1000
+                    },
+                    "org_id": {
+                        "type": "string",
+                        "title": "Organization id",
+                        "propertyOrder": 1200
+                    },
+                    "region": {
+                        "enum": [
+                            "eu-central-1",
+                            "us-east-1"
+                        ],
+                        "options": {
+                            "enum_titles": [
+                                "EU",
+                                "US"
+                            ]
+                        },
+                        "type": "string",
+                        "title": "Project region",
+                        "default": "EU",
+                        "propertyOrder": 2000
+                    }
+                }
             }
-          }
+        },
+        "datasets": {
+            "type": "object",
+            "required": [
+                "get_tokens",
+                "get_orchestrations",
+                "get_waiting_jobs"
+            ],
+            "title": "Project data to download",
+            "properties": {
+                "get_tokens": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Tokens",
+                    "propertyOrder": 2000
+                },
+                "get_orchestrations": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Orchestrations",
+                    "propertyOrder": 2500
+                },
+                "get_waiting_jobs": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Waiting Jobs",
+                    "propertyOrder": 3000
+                },
+                "get_tables": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Tables",
+                    "propertyOrder": 3500
+                },
+                "get_all_configurations": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get All Configurations",
+                    "propertyOrder": 4000
+                },
+                "get_transformations": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Transformations and Their Details",
+                    "description": "Downloads data to the transformation level, including input and output mappings.",
+                    "propertyOrder": 4500
+                }
+            }
+        },
+        "incremental_load": {
+            "type": "number",
+            "enum": [
+                1,
+                0
+            ],
+            "title": "Load Type",
+            "default": 1,
+            "options": {
+                "enum_titles": [
+                    "Incremental Load",
+                    "Full Load"
+                ]
+            }
         }
-      },
-      "datasets": {
-        "type": "object",
-        "required": [
-          "get_tokens",
-          "get_orchestrations",
-          "get_waiting_jobs"
-        ],
-        "title": "Project data to download",
-        "properties": {
-          "get_tokens": {
-            "type": "boolean",
-            "format": "checkbox",
-            "title": "Get Tokens",
-            "propertyOrder": 2000
-          },
-          "get_orchestrations": {
-            "type": "boolean",
-            "format": "checkbox",
-            "title": "Get Orchestrations",
-            "propertyOrder": 2500
-          },
-          "get_waiting_jobs": {
-            "type": "boolean",
-            "format": "checkbox",
-            "title": "Get Waiting Jobs",
-            "propertyOrder": 3000
-          },
-          "get_tables": {
-            "type": "boolean",
-            "format": "checkbox",
-            "title": "Get Tables",
-            "propertyOrder": 3500
-          },
-          "get_all_configurations": {
-            "type": "boolean",
-            "format": "checkbox",
-            "title": "Get All Configurations",
-            "propertyOrder": 4000
-          }
-        }
-      },
-      "incremental_load": {
-          "type": "number",
-          "enum": [
-              1,
-              0
-          ],
-          "title": "Load Type",
-          "default": 1,
-          "options": {
-              "enum_titles":["Incremental Load", "Full Load"]
-          }
-      }
     }
-  }
+}

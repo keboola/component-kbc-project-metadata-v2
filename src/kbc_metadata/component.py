@@ -1,11 +1,13 @@
 import logging
 import sys
+# import time
 from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient
 from kbc_metadata.result import MetadataWriter
 
 APP_VERSION = '0.0.1'
 TOKEN_SUFFIX = '_Telemetry_token'
+TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
 KEY_TOKENS = 'tokens'
 KEY_MASTERTOKEN = 'master_token'
@@ -22,6 +24,7 @@ KEY_GET_TOKENS = 'get_tokens'
 KEY_GET_ORCHESTRATIONS = 'get_orchestrations'
 KEY_GET_WAITING_JOBS = 'get_waiting_jobs'
 KEY_GET_TABLES = 'get_tables'
+KEY_GET_TRANSFORMATIONS = 'get_transformations'
 
 
 class ComponentWriters:
@@ -44,6 +47,8 @@ class MetadataComponent(KBCEnvHandler):
         self.client = MetadataClient()
         self.paramClient = self.determineToken()
         self.createWriters()
+
+        # self.previousTokens = {} if self.get_state_file() is None else self.get_state_file()
 
     def determineToken(self):
 
@@ -96,6 +101,15 @@ class MetadataComponent(KBCEnvHandler):
             self.writer.tables = MetadataWriter(self.tables_out_path, 'tables', self.paramIncremental)
             self.writer.tables_metadata = MetadataWriter(self.tables_out_path, 'tables-metadata', self.paramIncremental)
 
+        if self.paramDatasets.get(KEY_GET_TRANSFORMATIONS) is True:
+            self.writer.transformations = MetadataWriter(self.tables_out_path, 'transformations', self.paramIncremental)
+            self.writer.transformations_buckets = MetadataWriter(self.tables_out_path, 'transformations-buckets',
+                                                                 self.paramIncremental)
+            self.writer.transformations_inputs = MetadataWriter(self.tables_out_path, 'transformations-inputs',
+                                                                self.paramIncremental)
+            self.writer.transformations_outputs = MetadataWriter(self.tables_out_path, 'transformations-outputs',
+                                                                 self.paramIncremental)
+
     def getDataForProject(self, prjId, prjToken, prjRegion):
 
         self.client.initStorageAndSyrup(prjRegion, prjToken, prjId)
@@ -136,6 +150,46 @@ class MetadataComponent(KBCEnvHandler):
                 self.writer.tables_metadata.writerows(t['metadata'], parentDict=cfg)
 
             self.writer.tables.writerows(tables, parentDict=p_dict)
+
+        if self.paramDatasets.get(KEY_GET_TRANSFORMATIONS) is True:
+            buckets = self.client.storage.getTransformations()
+            self.writer.transformations_buckets.writerows(buckets, parentDict=p_dict)
+
+            for transformation in buckets:
+                _bucket = {}
+                _bucket['bucket_id'] = transformation['id']
+                _bucket_parent = {**_bucket, **p_dict}
+
+                _trans = []
+                for t in transformation['rows']:
+                    t['configuration']['packages'] = ','.join(t['configuration'].get('packages', []))
+                    t['configuration']['requires'] = ','.join(t['configuration'].get('requires', []))
+                    _trans += [t]
+
+                    _transformation = {'transformation_id': t['id']}
+                    _transformation_parent = {**_transformation, **_bucket_parent}
+
+                    _inputs = []
+                    for table_input in t['configuration'].get('input', []):
+                        table_input['columns'] = ','.join(table_input.get('columns', []))
+                        table_input['whereValues'] = ','.join(table_input.get('whereValues', []))
+                        table_input['loadType'] = table_input.get('loadType', 'copy')
+
+                        _inputs += [table_input]
+
+                    self.writer.transformations_inputs.writerows(_inputs, parentDict=_transformation_parent)
+
+                    _outputs = []
+                    for table_output in t['configuration'].get('output', []):
+                        table_output['primaryKey'] = ','.join(table_output.get('primaryKey', []))
+                        table_output['incremental'] = table_output.get('incremental', False)
+                        table_output['deleteWhereValues'] = ','.join(table_output.get('deleteWhereValues', []))
+
+                        _outputs += [table_output]
+
+                    self.writer.transformations_outputs.writerows(_outputs, parentDict=_transformation_parent)
+
+                self.writer.transformations.writerows(_trans, parentDict=_bucket_parent)
 
     def run(self):
 

@@ -5,7 +5,7 @@ from typing import Dict, List
 from urllib.parse import urljoin
 from kbc.client_base import HttpClientBase
 
-DEFAULT_TOKEN_EXPIRATION = 30 * 60
+DEFAULT_TOKEN_EXPIRATION = 30 * 60  # Default token expiration set to 24 hours
 
 BASE_URL = {
     'eu-central-1': 'https://connection.eu-central-1.keboola.com',
@@ -22,7 +22,7 @@ ApiResponse = List[Dict]
 
 class StorageClient(HttpClientBase):
 
-    def __init__(self, region: str, token: str, project: str) -> None:
+    def __init__(self, region: str, token: str, project: str, soft: bool = False) -> None:
 
         if region not in BASE_URL.keys():
             logging.exception(f"Unsupported region {region}.")
@@ -36,7 +36,10 @@ class StorageClient(HttpClientBase):
         self.paramToken = token
         self.paramRegion = region
         self.paramProject = project
-        self._verifyStorageToken()
+        self.paramSoft = soft
+
+        if self.paramSoft is False:
+            self._verifyStorageToken()
 
     def _verifyStorageToken(self) -> None:
 
@@ -46,12 +49,16 @@ class StorageClient(HttpClientBase):
         scVerify, jsVerify = Utils.responseSplitter(rspVerify)
 
         if scVerify == 200:
-            return
+            return True
 
         elif scVerify in (400, 401):
-            logging.exception(f"Token verification failed for {self.paramProject} in region {self.paramRegion}.")
-            logging.debug(jsVerify)
-            sys.exit(1)
+            if self.paramSoft is False:
+                logging.exception(f"Token verification failed for {self.paramProject} in region {self.paramRegion}.")
+                logging.debug(jsVerify)
+                sys.exit(1)
+
+            else:
+                return False
 
         else:
             logging.exception(f"Unknown exception. Received: {scVerify} - {jsVerify}.")
@@ -70,6 +77,21 @@ class StorageClient(HttpClientBase):
         else:
             logging.error(f"Could not obtain tokens for project {self.paramProject} in {self.paramRegion}.")
             logging.exception(f"Received: {scTokens} - {jsTokens}.")
+            sys.exit(1)
+
+    def getTransformations(self) -> ApiResponse:
+
+        urlTransformations = urljoin(self.base_url, 'components/transformation/configs')
+
+        rspTransformations = self.get_raw(url=urlTransformations)
+        scTransformations, jsTransformations = Utils.responseSplitter(rspTransformations)
+
+        if scTransformations == 200:
+            return jsTransformations
+
+        else:
+            logging.error(f"Could not obtain transformations for project {self.paramProject} in {self.paramRegion}.")
+            logging.exception(f"Received: {scTransformations} - {jsTransformations}.")
             sys.exit(1)
 
     def getAllConfigurations(self) -> ApiResponse:
