@@ -6,7 +6,7 @@ from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 
-APP_VERSION = '0.0.4'
+APP_VERSION = '0.0.5'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -50,10 +50,7 @@ class MetadataComponent(KBCEnvHandler):
         self.createWriters()
 
         self.previousTokens = {} if self.get_state_file() is None else self.get_state_file()
-        self.newTokens = {
-            'us-east-1': {},
-            'eu-central-1': {}
-        }
+        self.newTokens = {}
 
         # logging.debug("Previous tokens:")
         # logging.debug(self.previousTokens)
@@ -251,8 +248,9 @@ class MetadataComponent(KBCEnvHandler):
                 prj_name = prj['name']
                 prj_region = prj['region']
                 prj_token_description = prj_name + TOKEN_SUFFIX
+                prj_token_key = '|'.join([prj_region.replace('-', '_'), prj_id])
 
-                prj_token_old = self.previousTokens.get(prj_region, {}).get(prj_id)
+                prj_token_old = self.previousTokens.get(prj_token_key)
                 # logging.debug("Old token:")
                 # logging.debug(prj_token_old)
 
@@ -285,7 +283,7 @@ class MetadataComponent(KBCEnvHandler):
 
                 logging.info(f"Downloading data for project {prj_name} in region {prj_region}.")
                 self.getDataForProject(prj_id, prj_token['#token'], prj_region)
-                self.newTokens[prj_region][prj_id] = prj_token
+                self.newTokens[prj_token_key] = prj_token
 
         elif self.paramClient == 'storage':
 
