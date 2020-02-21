@@ -5,7 +5,7 @@ from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient
 from kbc_metadata.result import MetadataWriter
 
-APP_VERSION = '0.0.1'
+APP_VERSION = '0.0.3'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -173,9 +173,12 @@ class MetadataComponent(KBCEnvHandler):
                     for table_input in t['configuration'].get('input', []):
                         table_input['columns'] = ','.join(table_input.get('columns', []))
                         table_input['whereValues'] = ','.join(table_input.get('whereValues', []))
+                        table_input['whereColumn'] = table_input.get('whereColumn', '')
+                        table_input['whereOperator'] = table_input.get('whereOperator', '')
                         table_input['loadType'] = table_input.get('loadType', 'copy')
+                        table_input['changedSince'] = table_input.get('changedSince', '')
 
-                        _inputs += [table_input]
+                        _inputs += [table_input.copy()]
 
                     self.writer.transformations_inputs.writerows(_inputs, parentDict=_transformation_parent)
 
@@ -184,8 +187,10 @@ class MetadataComponent(KBCEnvHandler):
                         table_output['primaryKey'] = ','.join(table_output.get('primaryKey', []))
                         table_output['incremental'] = table_output.get('incremental', False)
                         table_output['deleteWhereValues'] = ','.join(table_output.get('deleteWhereValues', []))
+                        table_output['deleteWhereOperator'] = table_output.get('deleteWhereOperator', '')
+                        table_output['deleteWhereColumn'] = table_output.get('deleteWhereColumn', '')
 
-                        _outputs += [table_output]
+                        _outputs += [table_output.copy()]
 
                     self.writer.transformations_outputs.writerows(_outputs, parentDict=_transformation_parent)
 

@@ -97,7 +97,10 @@
             "required": [
                 "get_tokens",
                 "get_orchestrations",
-                "get_waiting_jobs"
+                "get_waiting_jobs",
+                "get_tables",
+                "get_all_configurations",
+                "get_transformations"
             ],
             "title": "Project data to download",
             "properties": {
