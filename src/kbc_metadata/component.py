@@ -6,7 +6,7 @@ from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 
-APP_VERSION = '0.0.5'
+APP_VERSION = '0.0.6'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -26,6 +26,7 @@ KEY_GET_ORCHESTRATIONS = 'get_orchestrations'
 KEY_GET_WAITING_JOBS = 'get_waiting_jobs'
 KEY_GET_TABLES = 'get_tables'
 KEY_GET_TRANSFORMATIONS = 'get_transformations'
+KEY_GET_PROJECT_USERS = 'get_project_users'
 
 
 class ComponentWriters:
@@ -115,10 +116,17 @@ class MetadataComponent(KBCEnvHandler):
             self.writer.transformations_outputs = MetadataWriter(self.tables_out_path, 'transformations-outputs',
                                                                  self.paramIncremental)
 
+        if self.paramDatasets.get(KEY_GET_PROJECT_USERS) is True:
+            self.writer.project_users = MetadataWriter(self.tables_out_path, 'project-users', self.paramIncremental)
+
     def getDataForProject(self, prjId, prjToken, prjRegion):
 
         self.client.initStorageAndSyrup(prjRegion, prjToken, prjId)
         p_dict = {'region': prjRegion, 'project_id': prjId}
+
+        if self.paramDatasets.get(KEY_GET_PROJECT_USERS) is True:
+            users = self.client.management.getProjectUsers(prjId)
+            self.writer.project_users.writerows(users, parentDict=p_dict)
 
         if self.paramDatasets.get(KEY_GET_ORCHESTRATIONS) is True:
             orch = self.client.syrup.getOrchestrations()
@@ -178,10 +186,7 @@ class MetadataComponent(KBCEnvHandler):
                     for table_input in t['configuration'].get('input', []):
                         table_input['columns'] = ','.join(table_input.get('columns', []))
                         table_input['whereValues'] = ','.join(table_input.get('whereValues', []))
-                        table_input['whereColumn'] = table_input.get('whereColumn', '')
-                        table_input['whereOperator'] = table_input.get('whereOperator', '')
                         table_input['loadType'] = table_input.get('loadType', 'copy')
-                        table_input['changedSince'] = table_input.get('changedSince', '')
 
                         _inputs += [table_input.copy()]
 
@@ -192,8 +197,6 @@ class MetadataComponent(KBCEnvHandler):
                         table_output['primaryKey'] = ','.join(table_output.get('primaryKey', []))
                         table_output['incremental'] = table_output.get('incremental', False)
                         table_output['deleteWhereValues'] = ','.join(table_output.get('deleteWhereValues', []))
-                        table_output['deleteWhereOperator'] = table_output.get('deleteWhereOperator', '')
-                        table_output['deleteWhereColumn'] = table_output.get('deleteWhereColumn', '')
 
                         _outputs += [table_output.copy()]
 

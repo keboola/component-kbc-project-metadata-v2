@@ -261,6 +261,21 @@ class ManagementClient(HttpClientBase):
             logging.exception(f"Received: {scOrg} - {jsOrg}.")
             sys.exit(1)
 
+    def getProjectUsers(self, projectId) -> ApiResponse:
+
+        urlUsers = urljoin(self.base_url, f'projects/{projectId}/users')
+
+        rspUsers = self.get_raw(url=urlUsers)
+        scUsers, jsUsers = Utils.responseSplitter(rspUsers)
+
+        if scUsers == 200:
+            return jsUsers
+
+        else:
+            logging.error(f"Could not download users for project {projectId} in region {self.paramRegion}.")
+            logging.exception(f"Received: {scUsers} - {jsUsers}.")
+            sys.exit(1)
+
     def createStorageToken(self, projectId: str, description: str, expiration: int = DEFAULT_TOKEN_EXPIRATION) -> Dict:
 
         urlToken = urljoin(self.base_url, f'projects/{projectId}/tokens')

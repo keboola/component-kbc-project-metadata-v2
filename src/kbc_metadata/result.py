@@ -25,10 +25,12 @@ JSON_WAITING_JOBS = []
 
 FIELDS_TOKENS = ['id', 'region', 'project_id', 'created', 'refreshed', 'description', 'isMasterToken',
                  'canManageBuckets', 'canManageTokens', 'canReadAllFileUploads', 'canPurgeTrash', 'expires',
-                 'isExpired', 'isDisabled', 'dailyCapacity', 'creatorToken_id', 'creatorToken_description']
+                 'isExpired', 'isDisabled', 'dailyCapacity', 'creatorToken_id', 'creatorToken_description',
+                 'admin_id', 'admin_name']
 FIELDS_R_TOKENS = ['id', 'region', 'project_id', 'created', 'refreshed', 'description', 'is_master_token',
                    'can_manage_buckets', 'can_manage_tokens', 'can_read_all_file_uploads', 'can_purge_trash', 'expires',
-                   'is_expired', 'is_disabled', 'daily_capacity', 'creator_token_id', 'creator_token_description']
+                   'is_expired', 'is_disabled', 'daily_capacity', 'creator_token_id', 'creator_token_description',
+                   'admin_id', 'admin_name']
 PK_TOKENS = ['id', 'region']
 JSON_TOKENS = []
 
@@ -92,6 +94,15 @@ FIELDS_R_TRANSFORMATIONS_OUTPUTS = ['transformation_id', 'region', 'destination'
 PK_TRANSFORMATIONS_OUTPUTS = ['transformation_id', 'region', 'destination', 'source']
 JSON_TRANSFORMATIONS_OUTPUTS = []
 
+FIELDS_PROJECT_USERS = ['id', 'region', 'project_id', 'name', 'email', 'mfaEnabled', 'canAccessLogs', 'isSuperAdmin',
+                        'expires', 'created', 'reason', 'role', 'status', 'invitor_id', 'invitor_name', 'invitor_email',
+                        'approver_id', 'approver_name', 'approver_email']
+FIELDS_R_PROJECT_USERS = ['id', 'region', 'project_id', 'name', 'email', 'mfa_emabled', 'can_access_logs',
+                          'is_super_admin', 'created', 'reason', 'role', 'status', 'invitor_id', 'invitor_name',
+                          'invitor_email', 'approver_id', 'approver_name', 'approver_email']
+PK_PROJECT_USERS = ['id', 'region', 'project_id']
+JSON_PROJECT_USERS = []
+
 
 class MetadataWriter:
 
@@ -133,10 +144,11 @@ class MetadataWriter:
 
         for row in listToWrite:
 
-            row = self.flatten_json(row)
+            row_f = row
+            row_f = self.flatten_json(x=row)
             _dictToWrite = {}
 
-            for key, value in row.items():
+            for key, value in row_f.items():
 
                 if key in self.paramJsonFields:
                     _dictToWrite[key] = json.dumps(value)
@@ -152,7 +164,10 @@ class MetadataWriter:
 
             self.writer.writerow(_dictToWrite)
 
-    def flatten_json(self, x, out={}, name=''):
+    def flatten_json(self, x, out=None, name=''):
+        if out is None:
+            out = dict()
+
         if type(x) is dict:
             for a in x:
                 self.flatten_json(x[a], out, name + a + '_')
