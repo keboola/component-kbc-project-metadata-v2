@@ -98,8 +98,8 @@ FIELDS_PROJECT_USERS = ['id', 'region', 'project_id', 'name', 'email', 'mfaEnabl
                         'expires', 'created', 'reason', 'role', 'status', 'invitor_id', 'invitor_name', 'invitor_email',
                         'approver_id', 'approver_name', 'approver_email']
 FIELDS_R_PROJECT_USERS = ['id', 'region', 'project_id', 'name', 'email', 'mfa_emabled', 'can_access_logs',
-                          'is_super_admin', 'created', 'reason', 'role', 'status', 'invitor_id', 'invitor_name',
-                          'invitor_email', 'approver_id', 'approver_name', 'approver_email']
+                          'is_super_admin', 'expires', 'created', 'reason', 'role', 'status', 'invitor_id',
+                          'invitor_name', 'invitor_email', 'approver_id', 'approver_name', 'approver_email']
 PK_PROJECT_USERS = ['id', 'region', 'project_id']
 JSON_PROJECT_USERS = []
 
