@@ -5,7 +5,7 @@ from typing import Dict, List
 from urllib.parse import urljoin
 from kbc.client_base import HttpClientBase
 
-DEFAULT_TOKEN_EXPIRATION = 30 * 60  # Default token expiration set to 24 hours
+DEFAULT_TOKEN_EXPIRATION = 26 * 60 * 60  # Default token expiration set to 26 hours
 
 BASE_URL = {
     'eu-central-1': 'https://connection.eu-central-1.keboola.com',
@@ -41,7 +41,7 @@ class StorageClient(HttpClientBase):
         if self.paramSoft is False:
             self._verifyStorageToken()
 
-    def _verifyStorageToken(self) -> None:
+    def _verifyStorageToken(self) -> bool:
 
         urlVerify = urljoin(self.base_url, 'tokens/verify')
 
@@ -146,7 +146,7 @@ class StorageClient(HttpClientBase):
 
 class SyrupClient(HttpClientBase):
 
-    def __init__(self, region: str, token: str, project: str):
+    def __init__(self, region: str, token: str, project: str) -> None:
 
         defHeaders = {
             'x-storageapi-token': token
@@ -225,7 +225,7 @@ class ManagementClient(HttpClientBase):
         self.paramOrganization = organization
         self._verifyManagementToken()
 
-    def _verifyManagementToken(self):
+    def _verifyManagementToken(self) -> None:
 
         urlVerify = urljoin(self.base_url, 'tokens/verify')
         logging.debug(urlVerify)
@@ -234,7 +234,7 @@ class ManagementClient(HttpClientBase):
         scVerify, jsVerify = Utils.responseSplitter(rspVerify)
 
         if scVerify == 200:
-            pass
+            return
 
         else:
             logging.error("Could not verify management token.")

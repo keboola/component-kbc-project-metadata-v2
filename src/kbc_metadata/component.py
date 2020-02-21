@@ -1,11 +1,12 @@
+import dateutil
 import logging
 import sys
-# import time
+import time
 from kbc.env_handler import KBCEnvHandler
-from kbc_metadata.client import MetadataClient
+from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 
-APP_VERSION = '0.0.3'
+APP_VERSION = '0.0.4'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -48,7 +49,14 @@ class MetadataComponent(KBCEnvHandler):
         self.paramClient = self.determineToken()
         self.createWriters()
 
-        # self.previousTokens = {} if self.get_state_file() is None else self.get_state_file()
+        self.previousTokens = {} if self.get_state_file() is None else self.get_state_file()
+        self.newTokens = {
+            'us-east-1': {},
+            'eu-central-1': {}
+        }
+
+        # logging.debug("Previous tokens:")
+        # logging.debug(self.previousTokens)
 
     def determineToken(self):
 
@@ -196,6 +204,39 @@ class MetadataComponent(KBCEnvHandler):
 
                 self.writer.transformations.writerows(_trans, parentDict=_bucket_parent)
 
+    @staticmethod
+    def convertIsoFormatToTimestamp(isoDTString: str) -> int:
+
+        if isoDTString == '' or isoDTString is None:
+            return None
+
+        else:
+            return int(dateutil.parser.parse(isoDTString).timestamp())
+
+    @staticmethod
+    def tokenInTreshold(tokenExpiration: int) -> bool:
+        if tokenExpiration is None:
+            return True
+
+        else:
+            current = int(time.time())
+            expiration = tokenExpiration - current
+
+            if expiration >= TOKEN_EXPIRATION_CUSHION:
+                return True
+            else:
+                return False
+
+    def isTokenValid(self, token: str, tokenExpiration: int, region: str, project: str) -> bool:
+
+        tokenNotExpired = self.tokenInTreshold(tokenExpiration)
+        tokenIsValid = StorageClient(region=region, project=project, token=token, soft=True)._verifyStorageToken()
+
+        if all([tokenIsValid, tokenNotExpired]):
+            return True
+        else:
+            return False
+
     def run(self):
 
         if self.paramClient == 'master':
@@ -206,14 +247,45 @@ class MetadataComponent(KBCEnvHandler):
 
             for prj in all_projects:
 
-                prj_id = prj['id']
+                prj_id = str(prj['id'])
                 prj_name = prj['name']
                 prj_region = prj['region']
                 prj_token_description = prj_name + TOKEN_SUFFIX
 
+                prj_token_old = self.previousTokens.get(prj_region, {}).get(prj_id)
+                # logging.debug("Old token:")
+                # logging.debug(prj_token_old)
+
+                if prj_token_old is None:
+                    logging.debug(f"Creating new storage token for project {prj_id} in region {prj_region}.")
+                    prj_token_new = self.client.management.createStorageToken(prj_id, prj_token_description)
+
+                    prj_token = {
+                        'id': prj_token_new['id'],
+                        '#token': prj_token_new['token'],
+                        'expires': self.convertIsoFormatToTimestamp(prj_token_new['expires'])
+                    }
+
+                else:
+                    valid = self.isTokenValid(prj_token_old['#token'], prj_token_old['expires'], prj_region, prj_id)
+
+                    if valid is True:
+                        logging.debug(f"Using token {prj_token_old['id']} from state for project {prj_id}.")
+                        prj_token = prj_token_old
+
+                    else:
+                        logging.debug(f"Creating new storage token for project {prj_id} in region {prj_region}.")
+                        prj_token_new = self.client.management.createStorageToken(prj_id, prj_token_description)
+
+                        prj_token = {
+                            'id': prj_token_new['id'],
+                            '#token': prj_token_new['token'],
+                            'expires': self.convertIsoFormatToTimestamp(prj_token_new['expires'])
+                        }
+
                 logging.info(f"Downloading data for project {prj_name} in region {prj_region}.")
-                prj_token = self.client.management.createStorageToken(prj_id, prj_token_description)
-                self.getDataForProject(prj_id, prj_token['token'], prj_region)
+                self.getDataForProject(prj_id, prj_token['#token'], prj_region)
+                self.newTokens[prj_region][prj_id] = prj_token
 
         elif self.paramClient == 'storage':
 
@@ -225,3 +297,5 @@ class MetadataComponent(KBCEnvHandler):
 
                 logging.info(f"Downloading data for project {prj_id} in region {prj_region}.")
                 self.getDataForProject(prj_id, prj_token, prj_region)
+
+        self.write_state_file(self.newTokens)
