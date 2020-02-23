@@ -17,9 +17,6 @@ KEY_INCREMENTAL = 'incremental_load'
 
 MANDATORY_PARAMS = [[KEY_TOKENS, KEY_MASTERTOKEN], KEY_DATASETS]
 
-SUPPORTED_DATASETS = ['get_all_configurations', 'get_tokens', 'get_orchestrations',
-                      'get_waiting_jobs']
-
 KEY_GET_ALL_CONFIGURATIONS = 'get_all_configurations'
 KEY_GET_TOKENS = 'get_tokens'
 KEY_GET_ORCHESTRATIONS = 'get_orchestrations'
@@ -27,6 +24,10 @@ KEY_GET_WAITING_JOBS = 'get_waiting_jobs'
 KEY_GET_TABLES = 'get_tables'
 KEY_GET_TRANSFORMATIONS = 'get_transformations'
 KEY_GET_PROJECT_USERS = 'get_project_users'
+KEY_GET_ORGANIZATION_USERS = 'get_organization_users'
+
+STORAGE_ENDPOINTS = [KEY_GET_ALL_CONFIGURATIONS, KEY_GET_TOKENS, KEY_GET_ORCHESTRATIONS, KEY_GET_WAITING_JOBS,
+                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_PROJECT_USERS]
 
 
 class ComponentWriters:
@@ -118,6 +119,10 @@ class MetadataComponent(KBCEnvHandler):
 
         if self.paramDatasets.get(KEY_GET_PROJECT_USERS) is True:
             self.writer.project_users = MetadataWriter(self.tables_out_path, 'project-users', self.paramIncremental)
+
+        if self.paramDatasets.get(KEY_GET_ORGANIZATION_USERS) is True:
+            self.writer.organization_users = MetadataWriter(self.tables_out_path, 'organization-users',
+                                                            self.paramIncremental)
 
     def getDataForProject(self, prjId, prjToken, prjRegion):
 
@@ -245,36 +250,29 @@ class MetadataComponent(KBCEnvHandler):
 
             all_projects = self.client.management.getOrganization()['projects']
 
-            for prj in all_projects:
+            if self.paramDatasets.get(KEY_GET_ORGANIZATION_USERS) is True:
+                org_users = self.client.management.getOrganizationUsers()
+                self.writer.organization_users.writerows(org_users, parentDict={
+                    'organization_id': self.client.management.paramOrganization,
+                    'region': self.client.management.paramRegion
+                    })
 
-                prj_id = str(prj['id'])
-                prj_name = prj['name']
-                prj_region = prj['region']
-                prj_token_description = prj_name + TOKEN_SUFFIX
-                prj_token_key = '|'.join([prj_region.replace('-', '_'), prj_id])
+            storage_booolean = [self.paramDatasets.get(key, False) for key in STORAGE_ENDPOINTS]
+            if any(storage_booolean) is True:
 
-                prj_token_old = self.previousTokens.get(prj_token_key)
-                # logging.debug("Old token:")
-                # logging.debug(prj_token_old)
+                for prj in all_projects:
 
-                if prj_token_old is None:
-                    logging.debug(f"Creating new storage token for project {prj_id} in region {prj_region}.")
-                    prj_token_new = self.client.management.createStorageToken(prj_id, prj_token_description)
+                    prj_id = str(prj['id'])
+                    prj_name = prj['name']
+                    prj_region = prj['region']
+                    prj_token_description = prj_name + TOKEN_SUFFIX
+                    prj_token_key = '|'.join([prj_region.replace('-', '_'), prj_id])
 
-                    prj_token = {
-                        'id': prj_token_new['id'],
-                        '#token': prj_token_new['token'],
-                        'expires': self.convertIsoFormatToTimestamp(prj_token_new['expires'])
-                    }
+                    prj_token_old = self.previousTokens.get(prj_token_key)
+                    # logging.debug("Old token:")
+                    # logging.debug(prj_token_old)
 
-                else:
-                    valid = self.isTokenValid(prj_token_old['#token'], prj_token_old['expires'], prj_region, prj_id)
-
-                    if valid is True:
-                        logging.debug(f"Using token {prj_token_old['id']} from state for project {prj_id}.")
-                        prj_token = prj_token_old
-
-                    else:
+                    if prj_token_old is None:
                         logging.debug(f"Creating new storage token for project {prj_id} in region {prj_region}.")
                         prj_token_new = self.client.management.createStorageToken(prj_id, prj_token_description)
 
@@ -284,9 +282,26 @@ class MetadataComponent(KBCEnvHandler):
                             'expires': self.convertIsoFormatToTimestamp(prj_token_new['expires'])
                         }
 
-                logging.info(f"Downloading data for project {prj_name} in region {prj_region}.")
-                self.getDataForProject(prj_id, prj_token['#token'], prj_region)
-                self.newTokens[prj_token_key] = prj_token
+                    else:
+                        valid = self.isTokenValid(prj_token_old['#token'], prj_token_old['expires'], prj_region, prj_id)
+
+                        if valid is True:
+                            logging.debug(f"Using token {prj_token_old['id']} from state for project {prj_id}.")
+                            prj_token = prj_token_old
+
+                        else:
+                            logging.debug(f"Creating new storage token for project {prj_id} in region {prj_region}.")
+                            prj_token_new = self.client.management.createStorageToken(prj_id, prj_token_description)
+
+                            prj_token = {
+                                'id': prj_token_new['id'],
+                                '#token': prj_token_new['token'],
+                                'expires': self.convertIsoFormatToTimestamp(prj_token_new['expires'])
+                            }
+
+                    logging.info(f"Downloading data for project {prj_name} in region {prj_region}.")
+                    self.getDataForProject(prj_id, prj_token['#token'], prj_region)
+                    self.newTokens[prj_token_key] = prj_token
 
         elif self.paramClient == 'storage':
 

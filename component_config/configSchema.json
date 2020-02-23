@@ -147,6 +147,12 @@
                     "format": "checkbox",
                     "title": "Get Project Users",
                     "propertyOrder": 5000
+                },
+                "get_organization_users": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Organization Users",
+                    "propertyOrder": 5500
                 }
             }
         },

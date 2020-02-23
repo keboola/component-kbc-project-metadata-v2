@@ -103,6 +103,13 @@ FIELDS_R_PROJECT_USERS = ['id', 'region', 'project_id', 'name', 'email', 'mfa_em
 PK_PROJECT_USERS = ['id', 'region', 'project_id']
 JSON_PROJECT_USERS = []
 
+FIELDS_ORGANIZATION_USERS = ['id', 'region', 'organization_id', 'name', 'email', 'mfaEnabled', 'canAccessLogs',
+                             'isSuperAdmin', 'created', 'invitor_id', 'invitor_name', 'invitor_email']
+FIELDS_R_ORGANIZATION_USERS = ['id', 'region', 'organization_id', 'name', 'email', 'mfa_enabled', 'can_access_logs',
+                               'is_super_admin', 'created', 'invitor_id', 'invitor_name', 'invitor_email']
+PK_ORGANIZATION_USERS = ['id', 'region', 'organization_id']
+JSON_ORGANIZATION_USERS = []
+
 
 class MetadataWriter:
 

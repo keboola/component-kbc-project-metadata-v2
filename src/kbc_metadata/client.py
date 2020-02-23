@@ -306,6 +306,21 @@ class ManagementClient(HttpClientBase):
             logging.exception(f"Received: {scToken} - {jsToken}.")
             sys.exit(1)
 
+    def getOrganizationUsers(self) -> ApiResponse:
+
+        urlOrgUsers = urljoin(self.base_url, f'organizations/{self.paramOrganization}/users')
+
+        rspOrgUsers = self.get_raw(url=urlOrgUsers)
+        scOrgUsers, jsOrgUsers = Utils.responseSplitter(rspOrgUsers)
+
+        if scOrgUsers == 200:
+            return jsOrgUsers
+
+        else:
+            logging.exception("Could not download organization users.")
+            logging.error(f"Received: {scOrgUsers} - {jsOrgUsers}.")
+            sys.exit(1)
+
 
 class MetadataClient:
 
