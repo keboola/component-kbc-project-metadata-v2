@@ -101,7 +101,8 @@
                 "get_tables",
                 "get_all_configurations",
                 "get_transformations",
-                "get_project_users"
+                "get_project_users",
+                "get_organization_users"
             ],
             "title": "Project data to download",
             "properties": {
