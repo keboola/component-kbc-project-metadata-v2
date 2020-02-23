@@ -97,7 +97,7 @@ JSON_TRANSFORMATIONS_OUTPUTS = []
 FIELDS_PROJECT_USERS = ['id', 'region', 'project_id', 'name', 'email', 'mfaEnabled', 'canAccessLogs', 'isSuperAdmin',
                         'expires', 'created', 'reason', 'role', 'status', 'invitor_id', 'invitor_name', 'invitor_email',
                         'approver_id', 'approver_name', 'approver_email']
-FIELDS_R_PROJECT_USERS = ['id', 'region', 'project_id', 'name', 'email', 'mfa_emabled', 'can_access_logs',
+FIELDS_R_PROJECT_USERS = ['id', 'region', 'project_id', 'name', 'email', 'mfa_enabled', 'can_access_logs',
                           'is_super_admin', 'expires', 'created', 'reason', 'role', 'status', 'invitor_id',
                           'invitor_name', 'invitor_email', 'approver_id', 'approver_name', 'approver_email']
 PK_PROJECT_USERS = ['id', 'region', 'project_id']
