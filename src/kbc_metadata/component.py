@@ -6,7 +6,7 @@ from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 
-APP_VERSION = '0.0.8'
+APP_VERSION = '0.0.9'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -27,7 +27,8 @@ KEY_GET_PROJECT_USERS = 'get_project_users'
 KEY_GET_ORGANIZATION_USERS = 'get_organization_users'
 
 STORAGE_ENDPOINTS = [KEY_GET_ALL_CONFIGURATIONS, KEY_GET_TOKENS, KEY_GET_ORCHESTRATIONS, KEY_GET_WAITING_JOBS,
-                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_PROJECT_USERS]
+                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS]
+MANAGEMENT_ENDPOINTS = [KEY_GET_PROJECT_USERS, KEY_GET_ORGANIZATION_USERS]
 
 
 class ComponentWriters:
@@ -49,6 +50,7 @@ class MetadataComponent(KBCEnvHandler):
 
         self.client = MetadataClient()
         self.paramClient = self.determineToken()
+        self.checkTokenPermissions()
         self.createWriters()
 
         self.previousTokens = {} if self.get_state_file() is None else self.get_state_file()
@@ -56,6 +58,22 @@ class MetadataComponent(KBCEnvHandler):
 
         # logging.debug("Previous tokens:")
         # logging.debug(self.previousTokens)
+
+        logging.debug(f"Using {self.paramClient} token.")
+
+    def checkTokenPermissions(self):
+
+        if self.paramClient == 'management':
+            return
+
+        else:
+            configBool = [self.paramDatasets.get(k, False) for k in MANAGEMENT_ENDPOINTS]
+            if any(configBool) is True:
+                logging.error(f"Management token required to obtain the following options: {MANAGEMENT_ENDPOINTS}.")
+                sys.exit(1)
+
+            else:
+                pass
 
     def determineToken(self):
 
@@ -71,7 +89,7 @@ class MetadataComponent(KBCEnvHandler):
                 sys.exit(1)
 
             else:
-                return 'master'
+                return 'management'
 
         elif len(self.paramTokens) != 0:
 
@@ -244,7 +262,7 @@ class MetadataComponent(KBCEnvHandler):
 
     def run(self):
 
-        if self.paramClient == 'master':
+        if self.paramClient == 'management':
             self.client.initManagement(self.paramMasterToken[0]['region'], self.paramMasterToken[0]['#token'],
                                        self.paramMasterToken[0]['org_id'])
 
