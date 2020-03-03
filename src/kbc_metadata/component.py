@@ -6,7 +6,7 @@ from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 
-APP_VERSION = '0.0.9'
+APP_VERSION = '0.0.10'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -135,6 +135,9 @@ class MetadataComponent(KBCEnvHandler):
             self.writer.transformations_outputs = MetadataWriter(self.tables_out_path, 'transformations-outputs',
                                                                  self.paramIncremental)
 
+            self.writer.transformations_queries = MetadataWriter(self.tables_out_path, 'transformations-queries',
+                                                                 self.paramIncremental)
+
         if self.paramDatasets.get(KEY_GET_PROJECT_USERS) is True:
             self.writer.project_users = MetadataWriter(self.tables_out_path, 'project-users', self.paramIncremental)
 
@@ -225,6 +228,10 @@ class MetadataComponent(KBCEnvHandler):
 
                     self.writer.transformations_outputs.writerows(_outputs, parentDict=_transformation_parent)
 
+                    _queries = [{'query_index': idx, 'query': r"{}".format(q)} for idx, q in
+                                enumerate(t['configuration'].get('queries', []))]
+                    self.writer.transformations_queries.writerows(_queries, parentDict=_transformation)
+
                 self.writer.transformations.writerows(_trans, parentDict=_bucket_parent)
 
     @staticmethod
@@ -273,7 +280,7 @@ class MetadataComponent(KBCEnvHandler):
                 self.writer.organization_users.writerows(org_users, parentDict={
                     'organization_id': self.client.management.paramOrganization,
                     'region': self.client.management.paramRegion
-                    })
+                })
 
             storage_booolean = [self.paramDatasets.get(key, False) for key in STORAGE_ENDPOINTS]
             if any(storage_booolean) is True:

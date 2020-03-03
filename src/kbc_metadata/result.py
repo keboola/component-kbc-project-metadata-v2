@@ -110,6 +110,11 @@ FIELDS_R_ORGANIZATION_USERS = ['id', 'region', 'organization_id', 'name', 'email
 PK_ORGANIZATION_USERS = ['id', 'region', 'organization_id']
 JSON_ORGANIZATION_USERS = []
 
+FIELDS_TRANSFORMATIONS_QUERIES = ['transformation_id', 'query_index', 'query']
+FIELDS_R_TRANSFORMATIONS_QUERIES = FIELDS_TRANSFORMATIONS_QUERIES
+PK_TRANSFORMATIONS_QUERIES = ['transformation_id', 'query_index']
+JSON_TRANSFORMATIONS_QUERIES = []
+
 
 class MetadataWriter:
 
