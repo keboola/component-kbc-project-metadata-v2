@@ -143,6 +143,20 @@ class StorageClient(HttpClientBase):
             logging.exception(f"Received: {scTables} - {jsTables}.")
             sys.exit(1)
 
+    def getTriggers(self) -> ApiResponse:
+
+        urlTriggers = urljoin(self.base_url, 'triggers')
+
+        rspTriggers = self.get_raw(urlTriggers)
+        scTriggers, jsTriggers = Utils.responseSplitter(rspTriggers)
+
+        if scTriggers == 200:
+            return jsTriggers
+
+        else:
+            logging.error(f"Could not obtain triggers for project {self.paramProject} in region {self.paramRegion}.")
+            sys.exit(1)
+
 
 class SyrupClient(HttpClientBase):
 

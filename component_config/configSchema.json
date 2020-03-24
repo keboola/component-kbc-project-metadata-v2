@@ -97,6 +97,7 @@
             "required": [
                 "get_tokens",
                 "get_orchestrations",
+                "get_triggers",
                 "get_waiting_jobs",
                 "get_tables",
                 "get_all_configurations",
@@ -118,6 +119,12 @@
                     "format": "checkbox",
                     "title": "Get Orchestrations",
                     "propertyOrder": 2500
+                },
+                "get_triggers": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Orchestration Triggers",
+                    "propertyOrder": 2750
                 },
                 "get_waiting_jobs": {
                     "type": "boolean",

@@ -26,9 +26,10 @@ KEY_GET_TABLES = 'get_tables'
 KEY_GET_TRANSFORMATIONS = 'get_transformations'
 KEY_GET_PROJECT_USERS = 'get_project_users'
 KEY_GET_ORGANIZATION_USERS = 'get_organization_users'
+KEY_GET_TRIGGERS = 'get_triggers'
 
 STORAGE_ENDPOINTS = [KEY_GET_ALL_CONFIGURATIONS, KEY_GET_TOKENS, KEY_GET_ORCHESTRATIONS, KEY_GET_WAITING_JOBS,
-                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS]
+                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS]
 MANAGEMENT_ENDPOINTS = [KEY_GET_PROJECT_USERS, KEY_GET_ORGANIZATION_USERS]
 
 
@@ -146,6 +147,10 @@ class MetadataComponent(KBCEnvHandler):
             self.writer.organization_users = MetadataWriter(self.tables_out_path, 'organization-users',
                                                             self.paramIncremental)
 
+        if self.paramDatasets.get(KEY_GET_TRIGGERS) is True:
+            self.writer.triggers = MetadataWriter(self.tables_out_path, 'triggers', self.paramIncremental)
+            self.writer.triggers_tables = MetadataWriter(self.tables_out_path, 'triggers-tables', self.paramIncremental)
+
     def getDataForProject(self, prjId, prjToken, prjRegion):
 
         self.client.initStorageAndSyrup(prjRegion, prjToken, prjId)
@@ -240,6 +245,14 @@ class MetadataComponent(KBCEnvHandler):
                     self.writer.transformations_queries.writerows(_queries, parentDict=_transformation_parent)
 
                 self.writer.transformations.writerows(_trans, parentDict=_bucket_parent)
+
+        if self.paramDatasets.get(KEY_GET_TRIGGERS) is True:
+            triggers = self.client.storage.getTriggers()
+            self.writer.triggers.writerows(triggers, parentDict=p_dict)
+
+            for trigger in triggers:
+                _trigger_parent = {**{'trigger_id': trigger['id']}, **p_dict}
+                self.writer.triggers_tables.writerows(trigger.get('tables', []), parentDict=_trigger_parent)
 
     @staticmethod
     def convertIsoFormatToTimestamp(isoDTString: str) -> int:

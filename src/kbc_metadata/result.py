@@ -115,6 +115,18 @@ FIELDS_R_TRANSFORMATIONS_QUERIES = FIELDS_TRANSFORMATIONS_QUERIES
 PK_TRANSFORMATIONS_QUERIES = ['transformation_id', 'region', 'query_index']
 JSON_TRANSFORMATIONS_QUERIES = []
 
+FIELDS_TRIGGERS = ['id', 'region', 'project_id', 'runWithTokenId', 'component', 'configurationId', 'lastRun',
+                   'creatorToken_id', 'creatorToken_description', 'coolDownPeriodMinutes']
+FIELDS_R_TRIGGERS = ['id', 'region', 'project_id', 'run_with_token_id', 'component', 'configuration_id', 'last_run',
+                     'creator_token_id', 'creator_token_description', 'cooldown_period_minutes']
+PK_TRIGGERS = ['id', 'region', 'project_id']
+JSON_TRIGGERS = []
+
+FIELDS_TRIGGERS_TABLES = ['trigger_id', 'region', 'project_id', 'tableId']
+FIELDS_R_TRIGGERS_TABLES = ['trigger_id', 'region', 'project_id', 'table_id']
+PK_TRIGGERS_TABLES = ['trigger_id', 'region', 'project_id']
+JSON_TRIGGERS_TABLES = []
+
 
 class MetadataWriter:
 
