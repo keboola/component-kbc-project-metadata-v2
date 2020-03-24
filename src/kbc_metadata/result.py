@@ -68,12 +68,12 @@ FIELDS_R_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id', 'name', 'versi
 PK_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id']
 JSON_TRANSFORMATIONS_BUCKETS = []
 
-FIELDS_TRANSFORMATIONS = ['id', 'region', 'project_id', 'bucket_id', 'name', 'configuration_packages',
+FIELDS_TRANSFORMATIONS = ['id_md5', 'id', 'region', 'project_id', 'bucket_id', 'name', 'configuration_packages',
                           'configuration_requires', 'configuration_backend', 'configuration_type',
                           'configuration_phase', 'configuration_disabled', 'version', 'created',
                           'creatorToken_id', 'creatorToken_description', 'changeDescription']
-FIELDS_R_TRANSFORMATIONS = ['id', 'region', 'project_id', 'bucket_id', 'name', 'packages', 'requires', 'backend',
-                            'type', 'phase', 'disabled', 'version', 'created', 'creator_token_id',
+FIELDS_R_TRANSFORMATIONS = ['id', 'number', 'region', 'project_id', 'bucket_id', 'name', 'packages', 'requires',
+                            'backend', 'type', 'phase', 'disabled', 'version', 'created', 'creator_token_id',
                             'creator_token_description', 'change_description']
 PK_TRANSFORMATIONS = ['id', 'region', 'project_id']
 JSON_TRANSFORMATIONS = []
@@ -110,9 +110,9 @@ FIELDS_R_ORGANIZATION_USERS = ['id', 'region', 'organization_id', 'name', 'email
 PK_ORGANIZATION_USERS = ['id', 'region', 'organization_id']
 JSON_ORGANIZATION_USERS = []
 
-FIELDS_TRANSFORMATIONS_QUERIES = ['transformation_id', 'query_index', 'query']
+FIELDS_TRANSFORMATIONS_QUERIES = ['transformation_id', 'region', 'query_index', 'query', 'bucket_id']
 FIELDS_R_TRANSFORMATIONS_QUERIES = FIELDS_TRANSFORMATIONS_QUERIES
-PK_TRANSFORMATIONS_QUERIES = ['transformation_id', 'query_index']
+PK_TRANSFORMATIONS_QUERIES = ['transformation_id', 'region', 'query_index']
 JSON_TRANSFORMATIONS_QUERIES = []
 
 

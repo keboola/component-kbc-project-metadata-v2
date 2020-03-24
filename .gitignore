@@ -4,6 +4,7 @@ __pycache__/
 .idea
 .project
 .pydevproject
+settings.json
 
 # kbc datafolder
 data/

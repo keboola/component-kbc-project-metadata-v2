@@ -2,11 +2,12 @@ import dateutil
 import logging
 import sys
 import time
+from hashlib import md5
 from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 
-APP_VERSION = '0.0.10'
+APP_VERSION = '0.0.11'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -194,22 +195,28 @@ class MetadataComponent(KBCEnvHandler):
             buckets = self.client.storage.getTransformations()
             self.writer.transformations_buckets.writerows(buckets, parentDict=p_dict)
 
-            for transformation in buckets:
+            for bucket in buckets:
                 _bucket = {}
-                _bucket['bucket_id'] = transformation['id']
+                _bucket['bucket_id'] = bucket['id']
                 _bucket_parent = {**_bucket, **p_dict}
 
                 _trans = []
-                for t in transformation['rows']:
-                    t['configuration']['packages'] = ','.join(t['configuration'].get('packages', []))
-                    t['configuration']['requires'] = ','.join(t['configuration'].get('requires', []))
-                    _trans += [t]
+                for transformation in bucket['rows']:
+                    transformation['configuration']['packages'] = ','.join(
+                        transformation['configuration'].get('packages', []))
+                    transformation['configuration']['requires'] = ','.join(
+                        transformation['configuration'].get('requires', []))
 
-                    _transformation = {'transformation_id': t['id']}
-                    _transformation_parent = {**_transformation, **_bucket_parent}
+                    _transformation_hash = md5('|'.join([transformation['id'], bucket['id']]).encode()).hexdigest()
+
+                    transformation['id_md5'] = _transformation_hash
+                    _trans += [transformation]
+
+                    _transformation = {'transformation_id': _transformation_hash}
+                    _transformation_parent = {**_transformation, **p_dict}
 
                     _inputs = []
-                    for table_input in t['configuration'].get('input', []):
+                    for table_input in transformation['configuration'].get('input', []):
                         table_input['columns'] = ','.join(table_input.get('columns', []))
                         table_input['whereValues'] = ','.join(table_input.get('whereValues', []))
                         table_input['loadType'] = table_input.get('loadType', 'copy')
@@ -219,7 +226,7 @@ class MetadataComponent(KBCEnvHandler):
                     self.writer.transformations_inputs.writerows(_inputs, parentDict=_transformation_parent)
 
                     _outputs = []
-                    for table_output in t['configuration'].get('output', []):
+                    for table_output in transformation['configuration'].get('output', []):
                         table_output['primaryKey'] = ','.join(table_output.get('primaryKey', []))
                         table_output['incremental'] = table_output.get('incremental', False)
                         table_output['deleteWhereValues'] = ','.join(table_output.get('deleteWhereValues', []))
@@ -228,9 +235,9 @@ class MetadataComponent(KBCEnvHandler):
 
                     self.writer.transformations_outputs.writerows(_outputs, parentDict=_transformation_parent)
 
-                    _queries = [{'query_index': idx, 'query': r"{}".format(q)} for idx, q in
-                                enumerate(t['configuration'].get('queries', []))]
-                    self.writer.transformations_queries.writerows(_queries, parentDict=_transformation)
+                    _queries = [{'query_index': idx, 'query': q} for idx, q in
+                                enumerate(transformation['configuration'].get('queries', []))]
+                    self.writer.transformations_queries.writerows(_queries, parentDict=_transformation_parent)
 
                 self.writer.transformations.writerows(_trans, parentDict=_bucket_parent)
 
