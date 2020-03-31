@@ -1,7 +1,6 @@
 import os
 import csv
 import json
-import logging
 
 FIELDS_ORCHESTRATIONS = ['id', 'region', 'project_id', 'name', 'crontabRecord', 'crontabTimezone', 'createdTime',
                          'lastScheduledTime', 'nextScheduledTime', 'token_id', 'token_description', 'active',
