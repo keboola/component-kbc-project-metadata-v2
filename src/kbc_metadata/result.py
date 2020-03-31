@@ -15,9 +15,9 @@ PK_ORCHESTRATIONS = ['id', 'region']
 JSON_ORCHESTRATIONS = []
 
 FIELDS_ORCHESTRATIONS_TASKS = ['id', 'orchestration_id', 'region', 'component', 'action',
-                               'timeoutMinutes', 'active', 'continueOnFailure', 'api_index']
+                               'timeoutMinutes', 'active', 'continueOnFailure', 'phase', 'api_index']
 FIELDS_R_ORCHESTRATIONS_TASKS = ['id', 'orchestration_id', 'region', 'component_id', 'action',
-                                 'timeout_minutes', 'is_active', 'continue_on_failure', 'api_index']
+                                 'timeout_minutes', 'is_active', 'continue_on_failure', 'phase', 'api_index']
 PK_ORCHESTRATIONS_TASKS = ['id', 'region']
 JSON_ORCHESTRATIONS_TASKS = []
 
