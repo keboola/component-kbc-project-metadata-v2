@@ -114,6 +114,8 @@ class MetadataComponent(KBCEnvHandler):
 
         if self.paramDatasets.get(KEY_GET_ORCHESTRATIONS) is True:
             self.writer.orchestrations = MetadataWriter(self.tables_out_path, 'orchestrations', self.paramIncremental)
+            self.writer.orchestrations_tasks = MetadataWriter(self.tables_out_path, 'orchestrations-tasks',
+                                                              self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_WAITING_JOBS) is True:
             self.writer.waiting_jobs = MetadataWriter(self.tables_out_path, 'waiting-jobs', self.paramIncremental)
@@ -161,8 +163,20 @@ class MetadataComponent(KBCEnvHandler):
             self.writer.project_users.writerows(users, parentDict=p_dict)
 
         if self.paramDatasets.get(KEY_GET_ORCHESTRATIONS) is True:
-            orch = self.client.syrup.getOrchestrations()
-            self.writer.orchestrations.writerows(orch, parentDict=p_dict)
+            orchestrations = self.client.syrup.getOrchestrations()
+            self.writer.orchestrations.writerows(orchestrations, parentDict=p_dict)
+
+            for orch in orchestrations:
+                orchestration_id = orch['id']
+                _orchestration_parent = {**{'orchestration_id': orchestration_id}, **p_dict}
+
+                orchestration_tasks = self.client.syrup.getOrchestrationTasks(orchestration_id)
+                _tasks = []
+
+                for idx, task in enumerate(orchestration_tasks):
+                    _tasks += [{**task, **{'api_index': idx}}.copy()]
+
+                self.writer.orchestrations_tasks.writerows(_tasks, parentDict=_orchestration_parent)
 
         if self.paramDatasets.get(KEY_GET_WAITING_JOBS) is True:
             jobs = self.client.syrup.getWaitingAndProcessingJobs()

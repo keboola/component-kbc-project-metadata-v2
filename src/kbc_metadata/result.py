@@ -1,6 +1,7 @@
 import os
 import csv
 import json
+import logging
 
 FIELDS_ORCHESTRATIONS = ['id', 'region', 'project_id', 'name', 'crontabRecord', 'crontabTimezone', 'createdTime',
                          'lastScheduledTime', 'nextScheduledTime', 'token_id', 'token_description', 'active',
@@ -13,6 +14,13 @@ FIELDS_R_ORCHESTRATIONS = ['id', 'region', 'project_id', 'name', 'crontab_record
 
 PK_ORCHESTRATIONS = ['id', 'region']
 JSON_ORCHESTRATIONS = []
+
+FIELDS_ORCHESTRATIONS_TASKS = ['id', 'orchestration_id', 'region', 'component', 'action',
+                               'timeoutMinutes', 'active', 'continueOnFailure', 'api_index']
+FIELDS_R_ORCHESTRATIONS_TASKS = ['id', 'orchestration_id', 'region', 'component_id', 'action',
+                                 'timeout_minutes', 'is_active', 'continue_on_failure', 'api_index']
+PK_ORCHESTRATIONS_TASKS = ['id', 'region']
+JSON_ORCHESTRATIONS_TASKS = []
 
 FIELDS_WAITING_JOBS = ['id', 'region', 'runId', 'project_id', 'project_name', 'token_id', 'token_description',
                        'component', 'status', 'createdTime', 'startTime', 'endTime', 'params_config',
@@ -168,8 +176,8 @@ class MetadataWriter:
 
         for row in listToWrite:
 
-            row_f = row
             row_f = self.flatten_json(x=row)
+
             _dictToWrite = {}
 
             for key, value in row_f.items():
