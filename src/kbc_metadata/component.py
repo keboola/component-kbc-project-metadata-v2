@@ -7,7 +7,7 @@ from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 
-APP_VERSION = '0.0.12'
+APP_VERSION = '0.0.13'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -27,9 +27,10 @@ KEY_GET_TRANSFORMATIONS = 'get_transformations'
 KEY_GET_PROJECT_USERS = 'get_project_users'
 KEY_GET_ORGANIZATION_USERS = 'get_organization_users'
 KEY_GET_TRIGGERS = 'get_triggers'
+KEY_GET_COMPONENT_CFG_DETAILS = 'get_component_cfg_details'
 
 STORAGE_ENDPOINTS = [KEY_GET_ALL_CONFIGURATIONS, KEY_GET_TOKENS, KEY_GET_ORCHESTRATIONS, KEY_GET_WAITING_JOBS,
-                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS]
+                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS, KEY_GET_COMPONENT_CFG_DETAILS]
 MANAGEMENT_ENDPOINTS = [KEY_GET_PROJECT_USERS, KEY_GET_ORGANIZATION_USERS]
 
 
@@ -114,6 +115,9 @@ class MetadataComponent(KBCEnvHandler):
 
         if self.paramDatasets.get(KEY_GET_ORCHESTRATIONS) is True:
             self.writer.orchestrations = MetadataWriter(self.tables_out_path, 'orchestrations', self.paramIncremental)
+            self.writer.orchestration_notifications = MetadataWriter(self.tables_out_path,
+                                                                     'orchestrations-notifications',
+                                                                     self.paramIncremental)
             self.writer.orchestrations_tasks = MetadataWriter(self.tables_out_path, 'orchestrations-tasks',
                                                               self.paramIncremental)
 
@@ -169,6 +173,9 @@ class MetadataComponent(KBCEnvHandler):
             for orch in orchestrations:
                 orchestration_id = orch['id']
                 _orchestration_parent = {**{'orchestration_id': orchestration_id}, **p_dict}
+
+                self.writer.orchestration_notifications.writerows(orch['notifications'],
+                                                                  parentDict=_orchestration_parent)
 
                 orchestration_tasks = self.client.syrup.getOrchestrationTasks(orchestration_id)
                 _tasks = []

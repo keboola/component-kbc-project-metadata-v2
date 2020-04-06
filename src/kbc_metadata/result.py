@@ -21,6 +21,11 @@ FIELDS_R_ORCHESTRATIONS_TASKS = ['id', 'orchestration_id', 'region', 'component_
 PK_ORCHESTRATIONS_TASKS = ['id', 'region']
 JSON_ORCHESTRATIONS_TASKS = []
 
+FIELDS_ORCHESTRATIONS_NOTIFICATIONS = ['orchestration_id', 'region', 'email', 'channel', 'parameters']
+FIELDS_R_ORCHESTRATIONS_NOTIFICATIONS = FIELDS_ORCHESTRATIONS_NOTIFICATIONS
+PK_ORCHESTRATIONS_NOTIFICATIONS = ['orchestration_id', 'region', 'email', 'channel']
+JSON_ORCHESTRATIONS_NOTIFICATIONS = ['parameters']
+
 FIELDS_WAITING_JOBS = ['id', 'region', 'runId', 'project_id', 'project_name', 'token_id', 'token_description',
                        'component', 'status', 'createdTime', 'startTime', 'endTime', 'params_config',
                        'params_configBucketId']
@@ -44,11 +49,12 @@ JSON_TOKENS = []
 FIELDS_CONFIGURATIONS = ['id', 'region', 'project_id', 'name', 'created', 'creatorToken_id', 'creatorToken_description',
                          'component_id', 'component_name', 'component_type',
                          'version', 'isDeleted', 'currentVersion_created', 'currentVersion_creatorToken_id',
-                         'currentVersion_creatorToken_description', 'currentVersion_changeDescription']
+                         'currentVersion_creatorToken_description', 'currentVersion_changeDescription', 'description']
 FIELDS_R_CONFIGURATIONS = ['id', 'region', 'project_id', 'name', 'created', 'creator_token_id',
                            'creator_token_description', 'component_id', 'component_name', 'component_type',
                            'version', 'is_deleted', 'current_version_created', 'current_version_creator_token_id',
-                           'current_version_creator_token_description', 'current_version_change_description']
+                           'current_version_creator_token_description', 'current_version_change_description',
+                           'description']
 PK_CONFIGURATIONS = ['id', 'region']
 JSON_CONFIGURATIONS = []
 
@@ -66,22 +72,24 @@ FIELDS_R_TABLES_METADATA = FIELDS_TABLES_METADATA
 PK_TABLES_METADATA = ['id', 'table_id', 'region', 'project_id']
 JSON_TABLES_METADATA = []
 
-FIELDS_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id', 'name', 'version', 'created', 'creatorToken_id',
-                                  'creatorToken_description', 'changeDescription', 'currentVersion_created',
-                                  'currentVersion_creatorToken_id', 'currentVersion_creatorToken_description']
-FIELDS_R_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id', 'name', 'version', 'created', 'creator_token_id',
-                                    'creator_token_description', 'change_description', 'current_version_created',
-                                    'current_version_creator_token_id', 'current_version_creator_token_description']
+FIELDS_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id', 'name', 'description', 'version', 'created',
+                                  'creatorToken_id', 'creatorToken_description', 'changeDescription',
+                                  'currentVersion_created', 'currentVersion_creatorToken_id',
+                                  'currentVersion_creatorToken_description']
+FIELDS_R_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id', 'name', 'description', 'version', 'created',
+                                    'creator_token_id', 'creator_token_description', 'change_description',
+                                    'current_version_created', 'current_version_creator_token_id',
+                                    'current_version_creator_token_description']
 PK_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id']
 JSON_TRANSFORMATIONS_BUCKETS = []
 
-FIELDS_TRANSFORMATIONS = ['id_md5', 'id', 'region', 'project_id', 'bucket_id', 'name', 'configuration_packages',
-                          'configuration_requires', 'configuration_backend', 'configuration_type',
-                          'configuration_phase', 'configuration_disabled', 'version', 'created',
+FIELDS_TRANSFORMATIONS = ['id_md5', 'id', 'region', 'project_id', 'bucket_id', 'name', 'description',
+                          'configuration_packages', 'configuration_requires', 'configuration_backend',
+                          'configuration_type', 'configuration_phase', 'configuration_disabled', 'version', 'created',
                           'creatorToken_id', 'creatorToken_description', 'changeDescription']
-FIELDS_R_TRANSFORMATIONS = ['id', 'number', 'region', 'project_id', 'bucket_id', 'name', 'packages', 'requires',
-                            'backend', 'type', 'phase', 'disabled', 'version', 'created', 'creator_token_id',
-                            'creator_token_description', 'change_description']
+FIELDS_R_TRANSFORMATIONS = ['id', 'number', 'region', 'project_id', 'bucket_id', 'name', 'description',
+                            'packages', 'requires', 'backend', 'type', 'phase', 'disabled', 'version', 'created',
+                            'creator_token_id', 'creator_token_description', 'change_description']
 PK_TRANSFORMATIONS = ['id', 'region', 'project_id']
 JSON_TRANSFORMATIONS = []
 
@@ -177,14 +185,15 @@ class MetadataWriter:
 
             row_f = self.flatten_json(x=row)
 
+            if self.paramJsonFields != []:
+                for field in self.paramJsonFields:
+                    row_f[field] = json.dumps(row[field])
+
             _dictToWrite = {}
 
             for key, value in row_f.items():
 
-                if key in self.paramJsonFields:
-                    _dictToWrite[key] = json.dumps(value)
-
-                elif key in self.paramFields:
+                if key in self.paramFields:
                     _dictToWrite[key] = value
 
                 else:
