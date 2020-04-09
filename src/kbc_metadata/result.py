@@ -145,7 +145,7 @@ JSON_TRIGGERS_TABLES = []
 
 class MetadataWriter:
 
-    def __init__(self, tableOutPath, tableName, incremental):
+    def __init__(self, tableOutPath, tableName, incremental, destination=None):
 
         self.paramPath = tableOutPath
         self.paramTableName = tableName
@@ -156,6 +156,7 @@ class MetadataWriter:
         self.paramPrimaryKey = eval(f'PK_{tableName.upper().replace("-", "_")}')
         self.paramFieldsRenamed = eval(f'FIELDS_R_{tableName.upper().replace("-", "_")}')
         self.paramIncremental = incremental
+        self.paramDestination = destination
 
         self.createManifest()
         self.createWriter()
@@ -167,6 +168,9 @@ class MetadataWriter:
             'primary_key': self.paramPrimaryKey,
             'columns': self.paramFieldsRenamed
         }
+
+        if self.paramDestination is not None:
+            template['destination'] = self.paramDestination
 
         path = self.paramTablePath + '.manifest'
 

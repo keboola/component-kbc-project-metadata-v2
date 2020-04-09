@@ -12,6 +12,7 @@
             "type": "array",
             "title": "List of Storage tokens",
             "description": "List of Storage tokens, defining the projects that will be scanned. Transformation Component and Storage access needed.",
+            "propertyOrder": 2000,
             "items": {
                 "format": "grid",
                 "type": "object",
@@ -48,7 +49,7 @@
         },
         "master_token": {
             "type": "array",
-            "propertyOrder": 100,
+            "propertyOrder": 1000,
             "title": "Master token",
             "description": "Set master token to analyze all project available in the organization. Note that this overrides any tokens explicitly specified in the List of Storage tokens section.",
             "maxItems": 1,
@@ -94,6 +95,7 @@
         },
         "datasets": {
             "type": "object",
+            "propertyOrder": 3000,
             "required": [
                 "get_tokens",
                 "get_orchestrations",
@@ -169,24 +171,28 @@
                     "type": "array",
                     "uniqueItems": true,
                     "items": {
-                      "type": "string",
-                      "enum": [
-                        "extractor", "writer", "application"
-                      ],"options": {
-                        "enum_titles": [
-                          "Extractors",
-                          "Writers",
-                          "Applications"
-                        ]
-                      }
+                        "type": "string",
+                        "enum": [
+                            "extractor",
+                            "writer",
+                            "application"
+                        ],
+                        "options": {
+                            "enum_titles": [
+                                "Extractors",
+                                "Writers",
+                                "Applications"
+                            ]
+                        }
                     },
                     "title": "Get Component config metadata",
                     "propertyOrder": 4100
-                  }
+                }
             }
         },
         "incremental_load": {
             "type": "number",
+            "propertyOrder": 4000,
             "enum": [
                 1,
                 0
@@ -199,6 +205,12 @@
                     "Full Load"
                 ]
             }
+        },
+        "destination_bucket": {
+            "type": "string",
+            "title": "Storage Bucket",
+            "description": "The name of the bucket, where all output will be stored.",
+            "propertyOrder": 5000
         }
     }
 }
