@@ -6,8 +6,9 @@ from hashlib import md5
 from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
+from typing import Dict, List
 
-APP_VERSION = '0.0.13'
+APP_VERSION = '0.0.14'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -109,6 +110,14 @@ class MetadataComponent(KBCEnvHandler):
             logging.exception("Neither master, nor storage token specified.")
             sys.exit(1)
 
+    @staticmethod
+    def _getObjectFromList(listOfObject: List, searchKey: str, searchKeyValue) -> Dict:
+
+        _evalList = [obj[searchKey] == searchKeyValue for obj in listOfObject]
+        _idx = _evalList.index(True)
+
+        return listOfObject[_idx]
+
     def createWriters(self):
 
         self.writer = ComponentWriters
@@ -168,6 +177,7 @@ class MetadataComponent(KBCEnvHandler):
 
         if self.paramDatasets.get(KEY_GET_ORCHESTRATIONS) is True:
             orchestrations = self.client.syrup.getOrchestrations()
+            orchestrations_storage = self.client.storage.getOrchestrations()
             self.writer.orchestrations.writerows(orchestrations, parentDict=p_dict)
 
             for orch in orchestrations:
@@ -177,7 +187,8 @@ class MetadataComponent(KBCEnvHandler):
                 self.writer.orchestration_notifications.writerows(orch['notifications'],
                                                                   parentDict=_orchestration_parent)
 
-                orchestration_tasks = self.client.syrup.getOrchestrationTasks(orchestration_id)
+                storage_configuration = self._getObjectFromList(orchestrations_storage, 'id', str(orchestration_id))
+                orchestration_tasks = storage_configuration['configuration']['tasks']
                 _tasks = []
 
                 for idx, task in enumerate(orchestration_tasks):

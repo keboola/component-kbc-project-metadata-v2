@@ -94,6 +94,21 @@ class StorageClient(HttpClientBase):
             logging.exception(f"Received: {scTransformations} - {jsTransformations}.")
             sys.exit(1)
 
+    def getOrchestrations(self) -> ApiResponse:
+
+        urlOrchestrations = urljoin(self.base_url, 'components/orchestrator/configs')
+
+        rspOrchestrations = self.get_raw(url=urlOrchestrations)
+        scOrchestrations, jsOrchestrations = Utils.responseSplitter(rspOrchestrations)
+
+        if scOrchestrations == 200:
+            return jsOrchestrations
+
+        else:
+            logging.error(f"Could not obtain orchestrations for project {self.paramProject} in {self.paramRegion}.")
+            logging.exception(f"Received: {scOrchestrations} - {jsOrchestrations}.")
+            sys.exit(1)
+
     def getAllConfigurations(self) -> ApiResponse:
 
         urlConfigs = urljoin(self.base_url, 'components')
