@@ -5,7 +5,8 @@
         "tokens",
         "master_token",
         "datasets",
-        "incremental_load"
+        "incremental_load",
+        "destination_bucket"
     ],
     "properties": {
         "tokens": {
