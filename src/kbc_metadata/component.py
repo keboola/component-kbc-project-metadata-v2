@@ -8,7 +8,7 @@ from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 from typing import Dict, List
 
-APP_VERSION = '0.0.15'
+APP_VERSION = '0.0.14'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -16,7 +16,6 @@ KEY_TOKENS = 'tokens'
 KEY_MASTERTOKEN = 'master_token'
 KEY_DATASETS = 'datasets'
 KEY_INCREMENTAL = 'incremental_load'
-KEY_DESTINATION_BUCKET = 'destination_bucket'
 
 MANDATORY_PARAMS = [[KEY_TOKENS, KEY_MASTERTOKEN], KEY_DATASETS]
 
@@ -52,7 +51,6 @@ class MetadataComponent(KBCEnvHandler):
         self.paramMasterToken = self.cfg_params[KEY_MASTERTOKEN]
         self.paramDatasets = self.cfg_params[KEY_DATASETS]
         self.paramIncremental = bool(self.cfg_params.get(KEY_INCREMENTAL, False))
-        self.paramDestination = self.cfg_params.get(KEY_DESTINATION_BUCKET, None)
 
         self.client = MetadataClient()
         self.paramClient = self.determineToken()
@@ -125,59 +123,48 @@ class MetadataComponent(KBCEnvHandler):
         self.writer = ComponentWriters
 
         if self.paramDatasets.get(KEY_GET_ORCHESTRATIONS) is True:
-            self.writer.orchestrations = MetadataWriter(self.tables_out_path, 'orchestrations',
-                                                        self.paramIncremental, destination=self.paramDestination)
+            self.writer.orchestrations = MetadataWriter(self.tables_out_path, 'orchestrations', self.paramIncremental)
             self.writer.orchestration_notifications = MetadataWriter(self.tables_out_path,
                                                                      'orchestrations-notifications',
-                                                                     self.paramIncremental,
-                                                                     destination=self.paramDestination)
+                                                                     self.paramIncremental)
             self.writer.orchestrations_tasks = MetadataWriter(self.tables_out_path, 'orchestrations-tasks',
-                                                              self.paramIncremental, self.paramDestination)
+                                                              self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_WAITING_JOBS) is True:
-            self.writer.waiting_jobs = MetadataWriter(self.tables_out_path, 'waiting-jobs',
-                                                      self.paramIncremental, self.paramDestination)
+            self.writer.waiting_jobs = MetadataWriter(self.tables_out_path, 'waiting-jobs', self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_TOKENS) is True:
-            self.writer.tokens = MetadataWriter(self.tables_out_path, 'tokens',
-                                                self.paramIncremental, self.paramDestination)
+            self.writer.tokens = MetadataWriter(self.tables_out_path, 'tokens', self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_ALL_CONFIGURATIONS) is True:
-            self.writer.configurations = MetadataWriter(self.tables_out_path, 'configurations',
-                                                        self.paramIncremental, self.paramDestination)
+            self.writer.configurations = MetadataWriter(self.tables_out_path, 'configurations', self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_TABLES) is True:
-            self.writer.tables = MetadataWriter(self.tables_out_path, 'tables',
-                                                self.paramIncremental, self.paramDestination)
-            self.writer.tables_metadata = MetadataWriter(self.tables_out_path, 'tables-metadata',
-                                                         self.paramIncremental, self.paramDestination)
+            self.writer.tables = MetadataWriter(self.tables_out_path, 'tables', self.paramIncremental)
+            self.writer.tables_metadata = MetadataWriter(self.tables_out_path, 'tables-metadata', self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_TRANSFORMATIONS) is True:
-            self.writer.transformations = MetadataWriter(self.tables_out_path, 'transformations',
-                                                         self.paramIncremental, self.paramDestination)
+            self.writer.transformations = MetadataWriter(self.tables_out_path, 'transformations', self.paramIncremental)
             self.writer.transformations_buckets = MetadataWriter(self.tables_out_path, 'transformations-buckets',
-                                                                 self.paramIncremental, self.paramDestination)
+                                                                 self.paramIncremental)
             self.writer.transformations_inputs = MetadataWriter(self.tables_out_path, 'transformations-inputs',
-                                                                self.paramIncremental, self.paramDestination)
+                                                                self.paramIncremental)
             self.writer.transformations_outputs = MetadataWriter(self.tables_out_path, 'transformations-outputs',
-                                                                 self.paramIncremental, self.paramDestination)
+                                                                 self.paramIncremental)
 
             self.writer.transformations_queries = MetadataWriter(self.tables_out_path, 'transformations-queries',
-                                                                 self.paramIncremental, self.paramDestination)
+                                                                 self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_PROJECT_USERS) is True:
-            self.writer.project_users = MetadataWriter(self.tables_out_path, 'project-users',
-                                                       self.paramIncremental, self.paramDestination)
+            self.writer.project_users = MetadataWriter(self.tables_out_path, 'project-users', self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_ORGANIZATION_USERS) is True:
             self.writer.organization_users = MetadataWriter(self.tables_out_path, 'organization-users',
-                                                            self.paramIncremental, self.paramDestination)
+                                                            self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_TRIGGERS) is True:
-            self.writer.triggers = MetadataWriter(self.tables_out_path, 'triggers',
-                                                  self.paramIncremental, self.paramDestination)
-            self.writer.triggers_tables = MetadataWriter(self.tables_out_path, 'triggers-tables',
-                                                         self.paramIncremental, self.paramDestination)
+            self.writer.triggers = MetadataWriter(self.tables_out_path, 'triggers', self.paramIncremental)
+            self.writer.triggers_tables = MetadataWriter(self.tables_out_path, 'triggers-tables', self.paramIncremental)
 
     def getDataForProject(self, prjId, prjToken, prjRegion):
 
