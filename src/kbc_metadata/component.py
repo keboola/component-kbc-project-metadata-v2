@@ -8,7 +8,7 @@ from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 from typing import Dict, List
 
-APP_VERSION = '0.0.14'
+APP_VERSION = '0.0.15'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -92,6 +92,10 @@ class MetadataComponent(KBCEnvHandler):
                 logging.exception("Missing mandatory fields from master token specification.")
                 sys.exit(1)
 
+            elif (_mastToken['region'] == '' or _mastToken['#token'] == '' or _mastToken['org_id'] == ''):
+                logging.error("Missing parameter specification in master token.")
+                sys.exit(1)
+
             else:
                 return 'management'
 
@@ -101,6 +105,10 @@ class MetadataComponent(KBCEnvHandler):
 
                 if 'region' not in token or '#key' not in token:
                     logging.exception("Missing mandatory fields for storage token specification.")
+                    sys.exit(1)
+
+                elif token['region'] == '' or token['#key'] == '':
+                    logging.error("Missing parameters specification for one of the storage tokens.")
                     sys.exit(1)
 
                 else:
@@ -255,7 +263,7 @@ class MetadataComponent(KBCEnvHandler):
                     _inputs = []
                     for table_input in transformation['configuration'].get('input', []):
                         table_input['columns'] = ','.join(table_input.get('columns', []))
-                        table_input['whereValues'] = ','.join(table_input.get('whereValues', []))
+                        table_input['whereValues'] = ','.join([str(x) for x in table_input.get('whereValues', [])])
                         table_input['loadType'] = table_input.get('loadType', 'copy')
 
                         _inputs += [table_input.copy()]
