@@ -21,7 +21,7 @@ MANDATORY_PARAMS = [[KEY_TOKENS, KEY_MASTERTOKEN], KEY_DATASETS]
 
 KEY_GET_ALL_CONFIGURATIONS = 'get_all_configurations'
 KEY_GET_TOKENS = 'get_tokens'
-KEY_GET_TOKENS_LAST_EVENTS = 'get_tokens_last_event'
+KEY_GET_TOKENS_LAST_EVENTS = 'get_tokens_last_events'
 KEY_GET_ORCHESTRATIONS = 'get_orchestrations'
 KEY_GET_WAITING_JOBS = 'get_waiting_jobs'
 KEY_GET_TABLES = 'get_tables'

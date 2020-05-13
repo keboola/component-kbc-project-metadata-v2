@@ -96,6 +96,7 @@
             "type": "object",
             "required": [
                 "get_tokens",
+                "get_tokens_last_events",
                 "get_orchestrations",
                 "get_triggers",
                 "get_waiting_jobs",
@@ -113,6 +114,13 @@
                     "title": "Get Tokens",
                     "propertyOrder": 2000,
                     "description": "Requires master storage token or token with <strong>canManageTokens</strong> permissions."
+                },
+                "get_tokens_last_events": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Tokens Last Events",
+                    "propertyOrder": 2100,
+                    "description": "Downloads last event for each token. Required: \"Get Tokens\" must be checked."
                 },
                 "get_orchestrations": {
                     "type": "boolean",
