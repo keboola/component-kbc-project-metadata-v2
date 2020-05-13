@@ -217,16 +217,18 @@ class MetadataComponent(KBCEnvHandler):
             tokens = self.client.storage.getTokens()
             self.writer.tokens.writerows(tokens, parentDict=p_dict)
 
-            for token in tokens:
-                token_id = token['id']
+            if self.paramDatasets.get(KEY_GET_TOKENS_LAST_EVENTS) is True:
 
-                _last_event = self.client.storage.getTokenLastEvent(token_id)
+                for token in tokens:
+                    token_id = token['id']
 
-                if _last_event == []:
-                    continue
-                else:
-                    self.writer.tokens_last_events.writerows(_last_event,
-                                                             parentDict={**p_dict, **{'token_id': token_id}})
+                    _last_event = self.client.storage.getTokenLastEvent(token_id)
+
+                    if _last_event == []:
+                        continue
+                    else:
+                        self.writer.tokens_last_events.writerows(_last_event,
+                                                                 parentDict={**p_dict, **{'token_id': token_id}})
 
         if self.paramDatasets.get(KEY_GET_ALL_CONFIGURATIONS) is True:
             configs = self.client.storage.getAllConfigurations()
