@@ -46,6 +46,15 @@ FIELDS_R_TOKENS = ['id', 'region', 'project_id', 'created', 'refreshed', 'descri
 PK_TOKENS = ['id', 'region']
 JSON_TOKENS = []
 
+FIELDS_TOKENS_LAST_EVENTS = ['token_id', 'region', 'project_id', 'id', 'event', 'component', 'message',
+                             'description', 'type', 'created', 'configurationId', 'objectId', 'objectName',
+                             'objectType', 'uri']
+FIELDS_R_TOKENS_LAST_EVENTS = ['token_id', 'region', 'project_id', 'event_id', 'event', 'component', 'message',
+                               'description', 'type', 'event_created', 'configuration_id', 'object_id',
+                               'object_name', 'object_type', 'uri']
+PK_TOKENS_LAST_EVENTS = ['token_id', 'region', 'project_id']
+JSON_TOKENS_LAST_EVENTS = []
+
 FIELDS_CONFIGURATIONS = ['id', 'region', 'project_id', 'name', 'created', 'creatorToken_id', 'creatorToken_description',
                          'component_id', 'component_name', 'component_type',
                          'version', 'isDeleted', 'currentVersion_created', 'currentVersion_creatorToken_id',

@@ -172,6 +172,22 @@ class StorageClient(HttpClientBase):
             logging.error(f"Could not obtain triggers for project {self.paramProject} in region {self.paramRegion}.")
             sys.exit(1)
 
+    def getTokenLastEvent(self, token_id: str) -> ApiResponse:
+
+        urlEvents = urljoin(self.base_url, f'tokens/{token_id}/events')
+        parEvents = {'limit': 1}
+
+        rspEvents = self.get_raw(url=urlEvents, params=parEvents)
+        scEvents, jsEvents = Utils.responseSplitter(rspEvents)
+
+        if scEvents == 200:
+            return jsEvents
+
+        else:
+            logging.error(f"Could not obtain last token event for token {token_id} in project {self.paramProject} " +
+                          f"in region {self.paramRegion}.")
+            return []
+
 
 class SyrupClient(HttpClientBase):
 
@@ -382,9 +398,3 @@ class Utils:
 
         else:
             return response.status_code, response.json()
-
-
-if __name__ == '__main__':
-
-    syr = SyrupClient('us-east-1', '4390-244910-06tQAVYel1LW6xnoBQJyFqZdF0qGiUANxid7DOpK', '4390')
-    x = syr.getWaitingAndProcessingJobs()

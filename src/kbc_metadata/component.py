@@ -8,7 +8,7 @@ from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 from typing import Dict, List
 
-APP_VERSION = '0.0.15'
+APP_VERSION = '0.0.16'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -21,6 +21,7 @@ MANDATORY_PARAMS = [[KEY_TOKENS, KEY_MASTERTOKEN], KEY_DATASETS]
 
 KEY_GET_ALL_CONFIGURATIONS = 'get_all_configurations'
 KEY_GET_TOKENS = 'get_tokens'
+KEY_GET_TOKENS_LAST_EVENTS = 'get_tokens_last_event'
 KEY_GET_ORCHESTRATIONS = 'get_orchestrations'
 KEY_GET_WAITING_JOBS = 'get_waiting_jobs'
 KEY_GET_TABLES = 'get_tables'
@@ -144,6 +145,10 @@ class MetadataComponent(KBCEnvHandler):
         if self.paramDatasets.get(KEY_GET_TOKENS) is True:
             self.writer.tokens = MetadataWriter(self.tables_out_path, 'tokens', self.paramIncremental)
 
+            if self.paramDatasets.get(KEY_GET_TOKENS_LAST_EVENTS) is True:
+                self.writer.tokens_last_events = MetadataWriter(self.tables_out_path, 'tokens-last-events',
+                                                                self.paramIncremental)
+
         if self.paramDatasets.get(KEY_GET_ALL_CONFIGURATIONS) is True:
             self.writer.configurations = MetadataWriter(self.tables_out_path, 'configurations', self.paramIncremental)
 
@@ -211,6 +216,17 @@ class MetadataComponent(KBCEnvHandler):
         if self.paramDatasets.get(KEY_GET_TOKENS) is True:
             tokens = self.client.storage.getTokens()
             self.writer.tokens.writerows(tokens, parentDict=p_dict)
+
+            for token in tokens:
+                token_id = token['id']
+
+                _last_event = self.client.storage.getTokenLastEvent(token_id)
+
+                if _last_event == []:
+                    continue
+                else:
+                    self.writer.tokens_last_events.writerows(_last_event,
+                                                             parentDict={**p_dict, **{'token_id': token_id}})
 
         if self.paramDatasets.get(KEY_GET_ALL_CONFIGURATIONS) is True:
             configs = self.client.storage.getAllConfigurations()
