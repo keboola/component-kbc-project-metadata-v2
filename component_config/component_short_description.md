@@ -1,1 +1,1 @@
-Short description
+Keboola Metadata extractor to download metadata from Keboola's APIs.
