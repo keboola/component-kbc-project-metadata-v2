@@ -29,10 +29,10 @@ KEY_GET_TRANSFORMATIONS = 'get_transformations'
 KEY_GET_PROJECT_USERS = 'get_project_users'
 KEY_GET_ORGANIZATION_USERS = 'get_organization_users'
 KEY_GET_TRIGGERS = 'get_triggers'
-KEY_GET_COMPONENT_CFG_DETAILS = 'get_component_cfg_details'
+# KEY_GET_COMPONENT_CFG_DETAILS = 'get_component_cfg_details'
 
 STORAGE_ENDPOINTS = [KEY_GET_ALL_CONFIGURATIONS, KEY_GET_TOKENS, KEY_GET_ORCHESTRATIONS, KEY_GET_WAITING_JOBS,
-                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS, KEY_GET_COMPONENT_CFG_DETAILS]
+                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS]
 MANAGEMENT_ENDPOINTS = [KEY_GET_PROJECT_USERS, KEY_GET_ORGANIZATION_USERS]
 
 
@@ -183,10 +183,6 @@ class MetadataComponent(KBCEnvHandler):
 
         self.client.initStorageAndSyrup(prjRegion, prjToken, prjId)
         p_dict = {'region': prjRegion, 'project_id': prjId}
-
-        if self.paramDatasets.get(KEY_GET_PROJECT_USERS) is True:
-            users = self.client.management.getProjectUsers(prjId)
-            self.writer.project_users.writerows(users, parentDict=p_dict)
 
         if self.paramDatasets.get(KEY_GET_ORCHESTRATIONS) is True:
             orchestrations = self.client.syrup.getOrchestrations()
@@ -359,6 +355,13 @@ class MetadataComponent(KBCEnvHandler):
                     'organization_id': self.client.management.paramOrganization,
                     'region': self.client.management.paramRegion
                 })
+
+            if self.paramDatasets.get(KEY_GET_PROJECT_USERS) is True:
+
+                for project in all_projects:
+                    p_dict = {'project_id': project['id'], 'region': self.paramMasterToken[0]['region']}
+                    users = self.client.management.getProjectUsers(project['id'])
+                    self.writer.project_users.writerows(users, parentDict=p_dict)
 
             storage_booolean = [self.paramDatasets.get(key, False) for key in STORAGE_ENDPOINTS]
             if any(storage_booolean) is True:
