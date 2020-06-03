@@ -14,12 +14,12 @@ FIELDS_R_ORCHESTRATIONS = ['id', 'region', 'project_id', 'name', 'crontab_record
 PK_ORCHESTRATIONS = ['id', 'region']
 JSON_ORCHESTRATIONS = []
 
-FIELDS_ORCHESTRATIONS_TASKS = ['id', 'orchestration_id', 'region', 'component', 'action',
+FIELDS_ORCHESTRATIONS_TASKS = ['id', 'orchestration_id', 'region', 'component', 'action', 'actionParameters',
                                'timeoutMinutes', 'active', 'continueOnFailure', 'phase', 'api_index']
-FIELDS_R_ORCHESTRATIONS_TASKS = ['id', 'orchestration_id', 'region', 'component_id', 'action',
+FIELDS_R_ORCHESTRATIONS_TASKS = ['id', 'orchestration_id', 'region', 'component_id', 'action', 'action_parameters',
                                  'timeout_minutes', 'is_active', 'continue_on_failure', 'phase', 'api_index']
 PK_ORCHESTRATIONS_TASKS = ['id', 'region']
-JSON_ORCHESTRATIONS_TASKS = []
+JSON_ORCHESTRATIONS_TASKS = ['actionParameters']
 
 FIELDS_ORCHESTRATIONS_NOTIFICATIONS = ['orchestration_id', 'region', 'email', 'channel', 'parameters']
 FIELDS_R_ORCHESTRATIONS_NOTIFICATIONS = FIELDS_ORCHESTRATIONS_NOTIFICATIONS
