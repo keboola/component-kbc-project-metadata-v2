@@ -172,25 +172,7 @@
                     "title": "Get Organization Users",
                     "propertyOrder": 5500,
                     "description": "Requires management token."
-                },
-                "get_component_cfg_details": {
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "extractor", "writer", "application"
-                      ],"options": {
-                        "enum_titles": [
-                          "Extractors",
-                          "Writers",
-                          "Applications"
-                        ]
-                      }
-                    },
-                    "title": "Get Component config metadata",
-                    "propertyOrder": 4100
-                  }
+                }
             }
         },
         "incremental_load": {
