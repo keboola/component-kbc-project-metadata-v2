@@ -81,6 +81,17 @@ FIELDS_R_TABLES_METADATA = FIELDS_TABLES_METADATA
 PK_TABLES_METADATA = ['id', 'table_id', 'region', 'project_id']
 JSON_TABLES_METADATA = []
 
+FIELDS_TABLES_COLUMNS = ['table_id', 'region', 'project_id', 'column']
+FIELDS_R_TABLES_COLUMNS = FIELDS_TABLES_COLUMNS
+PK_TABLES_COLUMNS = ['table_id', 'region', 'project_id', 'column']
+JSON_TABLES_COLUMNS = []
+
+FIELDS_TABLES_COLUMNS_METADATA = ['table_id', 'region', 'project_id', 'column', 'id', 'key',
+                                  'value', 'provider', 'timestamp']
+FIELDS_R_TABLES_COLUMNS_METADATA = FIELDS_TABLES_COLUMNS_METADATA
+PK_TABLES_COLUMNS_METADATA = ['id']
+JSON_TABLES_COLUMNS_METADATA = []
+
 FIELDS_TRANSFORMATIONS_BUCKETS = ['id', 'region', 'project_id', 'name', 'description', 'version', 'created',
                                   'creatorToken_id', 'creatorToken_description', 'changeDescription',
                                   'currentVersion_created', 'currentVersion_creatorToken_id',

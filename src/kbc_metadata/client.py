@@ -144,7 +144,7 @@ class StorageClient(HttpClientBase):
 
         urlTables = urljoin(self.base_url, 'tables')
         paramsTables = {
-            'include': 'metadata,buckets'
+            'include': 'metadata,buckets,columns,columnMetadata'
         }
 
         rspTables = self.get_raw(urlTables, params=paramsTables)

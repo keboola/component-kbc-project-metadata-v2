@@ -29,7 +29,7 @@ KEY_GET_TRANSFORMATIONS = 'get_transformations'
 KEY_GET_PROJECT_USERS = 'get_project_users'
 KEY_GET_ORGANIZATION_USERS = 'get_organization_users'
 KEY_GET_TRIGGERS = 'get_triggers'
-# KEY_GET_COMPONENT_CFG_DETAILS = 'get_component_cfg_details'
+KEY_GET_COLUMNS = 'get_columns'
 
 STORAGE_ENDPOINTS = [KEY_GET_ALL_CONFIGURATIONS, KEY_GET_TOKENS, KEY_GET_ORCHESTRATIONS, KEY_GET_WAITING_JOBS,
                      KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS]
@@ -48,6 +48,10 @@ class MetadataComponent(KBCEnvHandler):
         self.validate_config(MANDATORY_PARAMS)
         logging.info(f"Running component version {APP_VERSION}...")
 
+        if self.cfg_params.get('debug', False) is True:
+            logger = logging.getLogger()
+            logger.setLevel(level='DEBUG')
+
         self.paramTokens = self.cfg_params.get(KEY_TOKENS, [])
         self.paramMasterToken = self.cfg_params.get(KEY_MASTERTOKEN, [])
         self.paramDatasets = self.cfg_params[KEY_DATASETS]
@@ -60,9 +64,6 @@ class MetadataComponent(KBCEnvHandler):
 
         self.previousTokens = {} if self.get_state_file() is None else self.get_state_file()
         self.newTokens = {}
-
-        # logging.debug("Previous tokens:")
-        # logging.debug(self.previousTokens)
 
         logging.debug(f"Using {self.paramClient} token.")
 
@@ -156,6 +157,11 @@ class MetadataComponent(KBCEnvHandler):
             self.writer.tables = MetadataWriter(self.tables_out_path, 'tables', self.paramIncremental)
             self.writer.tables_metadata = MetadataWriter(self.tables_out_path, 'tables-metadata', self.paramIncremental)
 
+            if self.paramDatasets.get(KEY_GET_COLUMNS) is True:
+                self.writer.columns = MetadataWriter(self.tables_out_path, 'tables-columns', self.paramIncremental)
+                self.writer.columns_metadata = MetadataWriter(self.tables_out_path, 'tables-columns-metadata',
+                                                              self.paramIncremental)
+
         if self.paramDatasets.get(KEY_GET_TRANSFORMATIONS) is True:
             self.writer.transformations = MetadataWriter(self.tables_out_path, 'transformations', self.paramIncremental)
             self.writer.transformations_buckets = MetadataWriter(self.tables_out_path, 'transformations-buckets',
@@ -247,6 +253,14 @@ class MetadataComponent(KBCEnvHandler):
                 cfg = {**cfg, **p_dict}
 
                 self.writer.tables_metadata.writerows(t['metadata'], parentDict=cfg)
+
+                if self.paramDatasets.get(KEY_GET_COLUMNS) is True:
+                    _cols = [{'column': col} for col in t['columns']]
+                    self.writer.columns.writerows(_cols, parentDict=cfg)
+
+                    for col in t['columnMetadata']:
+                        col_cfg = {**cfg, **{'column': col}}
+                        self.writer.columns_metadata.writerows(t['columnMetadata'][col], parentDict=col_cfg)
 
             self.writer.tables.writerows(tables, parentDict=p_dict)
 

@@ -101,6 +101,7 @@
                 "get_triggers",
                 "get_waiting_jobs",
                 "get_tables",
+                "get_columns",
                 "get_all_configurations",
                 "get_transformations",
                 "get_project_users",
@@ -145,6 +146,13 @@
                     "format": "checkbox",
                     "title": "Get Tables",
                     "propertyOrder": 3500
+                },
+                "get_columns": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Columns",
+                    "description": "Downloads columns and column metadata for each table. Option <strong>Get Tables</strong> needs to be enabled.",
+                    "propertyOrder": 3750
                 },
                 "get_all_configurations": {
                     "type": "boolean",
