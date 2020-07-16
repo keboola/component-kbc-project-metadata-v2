@@ -8,7 +8,7 @@ from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 from typing import Dict, List
 
-APP_VERSION = '0.0.19'
+APP_VERSION = '0.0.20'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -44,7 +44,7 @@ class MetadataComponent(KBCEnvHandler):
 
     def __init__(self):
 
-        super().__init__(mandatory_params=MANDATORY_PARAMS, log_level='DEBUG')
+        super().__init__(mandatory_params=MANDATORY_PARAMS, log_level='INFO')
         self.validate_config(MANDATORY_PARAMS)
         logging.info(f"Running component version {APP_VERSION}...")
 
@@ -168,6 +168,11 @@ class MetadataComponent(KBCEnvHandler):
                                                                  self.paramIncremental)
             self.writer.transformations_inputs = MetadataWriter(self.tables_out_path, 'transformations-inputs',
                                                                 self.paramIncremental)
+
+            self.writer.transformations_inputs_md = MetadataWriter(self.tables_out_path,
+                                                                   'transformations-inputs-metadata',
+                                                                   self.paramIncremental)
+
             self.writer.transformations_outputs = MetadataWriter(self.tables_out_path, 'transformations-outputs',
                                                                  self.paramIncremental)
 
@@ -289,6 +294,7 @@ class MetadataComponent(KBCEnvHandler):
                     _transformation_parent = {**_transformation, **p_dict}
 
                     _inputs = []
+                    _metadata = []
                     for table_input in transformation['configuration'].get('input', []):
                         table_input['columns'] = ','.join(table_input.get('columns', []))
                         table_input['whereValues'] = ','.join([str(x) for x in table_input.get('whereValues', [])])
@@ -296,7 +302,13 @@ class MetadataComponent(KBCEnvHandler):
 
                         _inputs += [table_input.copy()]
 
+                        for column in table_input.get('datatypes', []):
+                            _metadata += [{**table_input['datatypes'][column],
+                                           **{'source': table_input['source'],
+                                              'destination': table_input['destination']}}]
+
                     self.writer.transformations_inputs.writerows(_inputs, parentDict=_transformation_parent)
+                    self.writer.transformations_inputs_md.writerows(_metadata, parentDict=_transformation_parent)
 
                     _outputs = []
                     for table_output in transformation['configuration'].get('output', []):
@@ -389,8 +401,6 @@ class MetadataComponent(KBCEnvHandler):
                     prj_token_key = '|'.join([prj_region.replace('-', '_'), prj_id])
 
                     prj_token_old = self.previousTokens.get(prj_token_key)
-                    # logging.debug("Old token:")
-                    # logging.debug(prj_token_old)
 
                     if prj_token_old is None:
                         logging.debug(f"Creating new storage token for project {prj_id} in region {prj_region}.")
@@ -425,11 +435,17 @@ class MetadataComponent(KBCEnvHandler):
 
         elif self.paramClient == 'storage':
 
+            i = 0
             for prj in self.paramTokens:
 
+                i += 1
                 prj_token = prj['#key']
                 prj_region = prj['region']
                 prj_id = prj_token.split('-')[0]
+
+                if prj_token == '':
+                    logging.error(f"Token at position {i} is empty.")
+                    sys.exit(1)
 
                 logging.info(f"Downloading data for project {prj_id} in region {prj_region}.")
                 self.getDataForProject(prj_id, prj_token, prj_region)

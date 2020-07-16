@@ -121,6 +121,13 @@ FIELDS_R_TRANSFORMATIONS_INPUTS = ['transformation_id', 'region', 'source', 'des
 PK_TRANSFORMATIONS_INPUTS = ['transformation_id', 'region', 'source', 'destination']
 JSON_TRANSFORMATIONS_INPUTS = []
 
+FIELDS_TRANSFORMATIONS_INPUTS_METADATA = ['transformation_id', 'region', 'source', 'destination', 'column', 'type',
+                                          'length', 'convertEmptyValuesToNull']
+FIELDS_R_TRANSFORMATIONS_INPUTS_METADATA = ['transformation_id', 'region', 'source', 'destination', 'column',
+                                            'datatype', 'length', 'convert_empty_values_to_null']
+PK_TRANSFORMATIONS_INPUTS_METADATA = ['transformation_id', 'region', 'source', 'destination', 'column']
+JSON_TRANSFORMATIONS_INPUTS_METADATA = []
+
 FIELDS_TRANSFORMATIONS_OUTPUTS = ['transformation_id', 'region', 'destination', 'source', 'primaryKey',
                                   'incremental', 'deleteWhereColumn', 'deleteWhereOperator', 'deleteWhereValues']
 FIELDS_R_TRANSFORMATIONS_OUTPUTS = ['transformation_id', 'region', 'destination', 'source', 'primary_key',
