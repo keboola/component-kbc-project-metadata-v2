@@ -8,7 +8,7 @@ from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 from typing import Dict, List
 
-APP_VERSION = '0.0.20'
+APP_VERSION = '0.0.21'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -83,9 +83,9 @@ class MetadataComponent(KBCEnvHandler):
 
     def determineToken(self):
 
-        if len(self.paramMasterToken) != 0:
+        if len_master := len(self.paramMasterToken) != 0:
 
-            if len(self.paramMasterToken) > 1:
+            if len_master > 1:
                 logging.warning("More than 1 master token specified. Only first will be used.")
 
             _mastToken = self.paramMasterToken[0]
@@ -94,7 +94,8 @@ class MetadataComponent(KBCEnvHandler):
                 logging.exception("Missing mandatory fields from master token specification.")
                 sys.exit(1)
 
-            elif (_mastToken['region'] == '' or _mastToken['#token'] == '' or _mastToken['org_id'] == ''):
+            elif (_mastToken['region'].strip() == '' or _mastToken['#token'].strip() == ''
+                  or _mastToken['org_id'].strip() == ''):
                 logging.error("Missing parameter specification in master token.")
                 sys.exit(1)
 
@@ -109,7 +110,7 @@ class MetadataComponent(KBCEnvHandler):
                     logging.exception("Missing mandatory fields for storage token specification.")
                     sys.exit(1)
 
-                elif token['region'] == '' or token['#key'] == '':
+                elif token['region'].strip() == '' or token['#key'].strip() == '':
                     logging.error("Missing parameters specification for one of the storage tokens.")
                     sys.exit(1)
 
@@ -302,10 +303,11 @@ class MetadataComponent(KBCEnvHandler):
 
                         _inputs += [table_input.copy()]
 
-                        for column in table_input.get('datatypes', []):
-                            _metadata += [{**table_input['datatypes'][column],
-                                           **{'source': table_input['source'],
-                                              'destination': table_input['destination']}}]
+                        if transformation['configuration'].get('backend') != 'redshift':
+                            for column in table_input.get('datatypes', []):
+                                _metadata += [{**table_input['datatypes'][column],
+                                               **{'source': table_input['source'],
+                                                  'destination': table_input['destination']}}]
 
                     self.writer.transformations_inputs.writerows(_inputs, parentDict=_transformation_parent)
                     self.writer.transformations_inputs_md.writerows(_metadata, parentDict=_transformation_parent)

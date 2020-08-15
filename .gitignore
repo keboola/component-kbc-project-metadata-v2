@@ -5,6 +5,7 @@ __pycache__/
 .project
 .pydevproject
 settings.json
+.vscode/
 
 # kbc datafolder
 data/
