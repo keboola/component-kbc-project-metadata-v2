@@ -1,0 +1,7 @@
+"615139591","534062652","us-east-1","bizztreat.ex-itunes-analytics","run","{""config"": ""543652512""}","","True","False","New phase","0"
+"615139592","534062652","us-east-1","keboola.ex-aws-s3","run","{""config"": ""591520212""}","","True","False","New phase","1"
+"592091822","553392110","us-east-1","kds-team.ex-2performant","run","{""config"": ""530680133""}","","True","False","Extraction","0"
+"592091823","553392110","us-east-1","keboola.ex-facebook","run","{""config"": ""530261382""}","","True","False","Extraction","1"
+"592091824","553392110","us-east-1","transformation","run","{""config"": ""533332197""}","","True","False","Transformation","2"
+"592091825","553392110","us-east-1","keboola.wr-aws-s3","run","{""config"": ""535261467""}","","True","False","Transformation","3"
+"615139676","615139645","us-east-1","keboola.ex-aws-s3","run","{""config"": ""591520212""}","","True","False","New phase","0"

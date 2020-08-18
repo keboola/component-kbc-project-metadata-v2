@@ -1,3 +1,6 @@
+**1.0.0**
+Published version
+
 **0.0.3**
 Added support for obtaining transformation details.
 

@@ -1,61 +1,84 @@
-To configure an extractor, either a master token or a list of storage tokens is required, and it's required to configure data which will be downloaded.
+To configure the extractor, either [a master access token (management token)](https://help.keboola.com/management/account/#tokens) is needed or an [array of storage tokens](https://help.keboola.com/management/project/tokens/) for all projects, for which metadata should be downloaded. Additionally, you'll need to be able to specify the ID of your organization and region, where your projects are located.
+
+A sample of the configuration can be found in the [component repository](https://bitbucket.org/kds_consulting_team/kds-team.ex-kbc-project-metadata-v2/src/master/component_config/sample-config/).
 
 ### Token specification
 
-Users can specify either a master token or a list of storage tokens. If a master token is specified, it takes precedence over storage tokens.
+The application accepts either one of the two options:
 
-Along with **master token**, an organization ID and region is required as well. Token will then access each project in the organization and create temporary storage tokens to download data. These temporary tokens are always named as `[PROJECT_NAME]_Telemetry_token` and have an expiration of 26 hours. Created storage tokens are saved in configurations state file and are re-used at later runs if they're still valid. **In order to download data for all projects in an organization, user whose master token is specified must be art of the organization.**
+1. one master access token,
+2. any number of storage tokens.
 
-If a list of **storage tokens** is specified, extractor will use these tokens to access the project and no extra tokens are required.
+If both options are specified, master access token is prioritized and storage tokens are disregarded.
 
-If any of the tokens in the configuration is not valid, the extractor will fail.
+#### Authenticating with master access token (management token)
 
-### Data download
+Specifying master access token allows to download data for all projects in the specified organization. The user, whose access token is used in the configuration, **must be part of the organization**, for which the data should be downloaded. If user is not part of the organization, the extractor will not be able to access the organization data and hence won't be able to download necessary metadata.
 
-The metadata extractor offers multiple available data objects, which can be downloaded.
+Master token automatically accesses all projects within the organization and creates temporary storage tokens to download the necessary data. These tokens can be distinguished by their name, which follows `[PROJECT_NAME]_Telemetry_token` naming convention. All of the automatically created tokens have an expiration of 26 hours and are **re-used by the extractor**, if the extractor is ran multiple times a day.
 
-#### 1. Get Tokens
+Along with master access token, an ID of the organization must be provided (from URL) as well as region, where the organization is located.
 
-The option downloads all tokens that are present in the project at the time of a download. Result is the table `tokens`, which contains all available information about tokens in each project. This option requires a master token to be specified or a storage token with `canManageTokens` permissions.
+#### Authenticating with storage tokens
 
-#### 2. Get Tokens Last Events
+Storage tokens provide direct access to the project, in which they were created. Extractor uses these tokens to directly download data from within the project. It's therefore crucial, that these tokens **do not have any limited functionality** (such as restricted to only some tables or components), otherwise the tokens will not be able to download all the necessary data.
 
-The option downloads last events for each token fetched with `Get Tokens` option. It is therefore required, that `Get Tokens` is checked as well for this option to download latest events of tokens. Result is table `tokens-last-events`, which has information about last events of each token.
+### Available data
 
-#### 3. Get Orchestrations
+The metadata extractor allows to download an extended set of objects from the Keboola's APIs. All of the options and their requirements will be discussed here.
 
-The option downloads orchestrations in each project, as well as their tasks and notifications. The option results in 3 tables: `orchestrations`, `orchestrations-tasks` and `orchestrations-notifications`.
-
-#### 4. Get Orchestration Triggers
-
-The options downloads data about event triggers for event triggered orchestrations as well as tables, for which a trigger is set. Results in `triggers` and `triggers-tables` tables.
-
-#### 5. Get Waiting Jobs
-
-The option downloads jobs, which are currently processing or waiting in the projects. Results in `waiting-jobs`.
-
-#### 6. Get Tables
-
-The option downloads metadata about all tables present in project's storage, as well as metadata associated with that table. Results in `tables` and `tables-metadata`.
-
-#### 7. Get All Configurations
-
-Downloads information about all configurations in the project, their names, descriptions and ids, as well as component types. Results in `configurations` table.
-
-#### 8. Get Transformations and Their Details
-
-Downloads information about all transformations present in the projects. Results in 5 tables:
-
-- `transformations-buckets` - has information about all transformation buckets
-- `transformations` - has information about all transformation in all buckets
-- `transformations-inputs` - information about input mappings for all transformations
-- `transformations-outputs` - information about output mappings for all transformations
-- `transformations-queries` - information about all queries/scripts for all transformations
-
-#### 9. Get Project Users
-
-Downloads information about project users and their belonging to a project. Results in `project-users` table. This option requires a master token.
-
-#### 10. Get Organization Users
-
-Downloads information about organization users. Results in table `organization-users`. This option requires a master token.
+- Get Tokens (`get_tokens`)
+    - **description**: the option downloads data about all storage tokens present in the project
+    - **table(s)**: `tokens`
+    - **requirements**: this option requires either a master access token, a master storage token or a regular storage token with `canManageTokens` permissions
+    - **use case**: monitor all tokens in the project to prevent security breaches
+- Get Tokens Last Events (`get_tokens_last_events`)
+    - **description**: the option downloads data about last one event for each of the tokens in the project
+    - **table(s)**: `tokens-last-events`
+    - **requirements**: the option requires the `get_tokens` option to be active, otherwise no events will be downloaded
+    - **use case**: determine inactive tokens and remove them
+- Get Orchestrations (`get_orchestrations`)
+    - **description**: the option downloads information about all orchestrations in the project, along with orchestration tasks and notifications
+    - **table(s)**: `orchestrations`, `orchestrations-tasks` and `orchestrations-notifications`
+    - **requirements**: none
+    - **use case**: find orchestrations without error notifications set up, find orchestrations with inactive tasks
+- Get Orchestration Triggers (`get_triggers`)
+    - **description**: downloads data about event triggers for event triggered orchestrations
+    - **table(s)**: `triggers` and `triggers-tables`
+    - **requirements**: none
+    - **use case**: determine tables which are necessary to run your event triggered orchestrations
+- Get Waiting Jobs (`get_waiting_jobs`)
+    - **description**: downloads all currently waiting jobs in the project
+    - **table(s)**: `waiting-jobs`
+    - **requirements**: none
+    - **use case**: monitor all waiting or processing jobs at any given time
+- Get Tables (`get_tables`)
+    - **description**: downloads information about all tables in storage as well as their metadata (descriptions, last updates, etc.)
+    - **table(s)**: `tables` and `tables-metadata`
+    - **requirements**: a storage token with no limited access to storage
+    - **use case**: find tables without descriptions, find tables which were not updated in a certain period of time
+- Get Columns (`get_columns`)
+    - **description**: downloads information about all of the columns for each table
+    - **table(s)**: `tables-columns` and `tables-columns-metadata`
+    - **requirements**: `get_tables` option must be checked
+    - **use case**: find columns without descriptions, find dropped columns with snapshotting
+- Get All Configurations (`get_all_configurations`)
+    - **description**: downloads information about all configurations present in the project
+    - **table(s)** `configurations`
+    - **requirements**: a storage token with unlimited access to all components
+    - **use case**: find all configurations without descriptions, find all configurations that don't follow naming conventions
+- Get Transformations and Their Details (`get_transformations`)
+    - **description**: downloads information about transformations, input, outputs and queries used
+    - **table(s)**: `transformations`, `transformations-buckets`, `transformations-inputs`, `transformations-inputs-metadata`, `transformations-outputs` and `transformations-queries`
+    - **requirements**: a storage token with access to transformations
+    - **use case**: analyze SQL queries for extra inputs, find transformations which are processing same output with full load
+- Get Project Users (`get_project_users`)
+    - **description**: downloads data about users and their access to projects
+    - **table(s)**: `project-users`
+    - **requirements**: a master access token
+    - **use case**: monitor users' access to projects
+- Get Organization Users (`get_organization_users`)
+    - **description**: downloads data about users belonging to the specified organization
+    - **table(s)**: `organization-users`
+    - **requirements**: a master access token
+    - **use case**: monitor users' access to organization

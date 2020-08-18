@@ -1,0 +1,462 @@
+"90dd4fd4e6d33ccf4d96134d996c156f","us-east-1","0","-- This is a sample query.
+-- Adjust accordingly to your input mapping, output mapping
+-- and desired functionality.
+-- CREATE TABLE ""out_table"" AS SELECT * FROM ""in_table"";",""
+"f898a5372fd1d789431adcd2d5758302","us-east-1","0","import csv
+
+_rdr = csv.DictReader(open('/data/in/tables/test.csv'))
+_wrt = csv.DictWriter(open('/data/out/tables/processed.csv', 'w'), fieldnames=_rdr.fieldnames)
+_wrt.writeheader()
+
+for row in _rdr:
+    _wrt.writerow(row)",""
+"524d6771a4c019024584d0ca0f6591f5","us-east-1","0","# This is a sample script.
+# Adjust accordingly to your input mapping, output mapping
+# and desired functionality.
+# input_data <- read.csv(file = ""in/tables/input.csv"");
+# result <- input_data
+# write.csv(result, file = ""out/tables/output.csv"", row.names = FALSE)",""
+"b03be817db3d09bf4507c9f355ed546b","us-east-1","0","CREATE OR REPLACE FUNCTION js_big_num(""n1"" FLOAT, ""n2"" FLOAT)
+    RETURNS FLOAT
+    LANGUAGE JAVASCRIPT
+AS
+$$
+{
+  if (n1 > n2) {
+    return n1;",""
+"b03be817db3d09bf4507c9f355ed546b","us-east-1","1","} else {
+    return n2;",""
+"b03be817db3d09bf4507c9f355ed546b","us-east-1","2","}
+}
+$$
+;",""
+"b03be817db3d09bf4507c9f355ed546b","us-east-1","3","CREATE OR REPLACE TABLE ""out"" AS
+SELECT js_big_num(1, 2);",""
+"93ea562db6cbb97a33c829baccf4b44d","us-east-1","0","CREATE OR REPLACE FUNCTION js_big_num(""n1"" FLOAT, ""n2"" FLOAT)
+    RETURNS FLOAT
+    LANGUAGE JAVASCRIPT
+AS
+'
+{
+  if (n1 > n2) {
+    return n1;
+  } else {
+    return n2;
+  }
+}
+'
+;",""
+"93ea562db6cbb97a33c829baccf4b44d","us-east-1","1","CREATE OR REPLACE TABLE ""out"" AS
+SELECT js_big_num(1, 2) AS ""d"";",""
+"68ad6517ee4e2c3d24cf89be131882c6","us-east-1","0","print({{ shoe_size }})
+print({{ shoe_brand }})
+print({{ shoe_type }})",""
+"9c48e5db35a843334d8de52703b9fe17","us-east-1","0","-- Auto-generated code using Snapshotting Generator. Modify as you please.
+
+SET CURR_DATE =
+  (SELECT CONVERT_TIMEZONE('Europe/Prague', current_timestamp()))::DATE;",""
+"9c48e5db35a843334d8de52703b9fe17","us-east-1","1","
+SET CURR_TIMESTAMP =
+  (SELECT CONVERT_TIMEZONE('Europe/Prague', current_timestamp())::TIMESTAMP_NTZ);",""
+"9c48e5db35a843334d8de52703b9fe17","us-east-1","2","
+SET CURR_DATE_TXT =
+  (SELECT TO_CHAR($CURR_DATE, 'YYYY-MM-DD'));",""
+"9c48e5db35a843334d8de52703b9fe17","us-east-1","3","
+SET CURR_TIMESTAMP_TXT =
+  (SELECT TO_CHAR($CURR_TIMESTAMP, 'YYYY-MM-DD HH:Mi:SS'));",""
+"9c48e5db35a843334d8de52703b9fe17","us-east-1","4","CREATE OR REPLACE TABLE changed_records_snapshot AS WITH diff_records AS
+  (-- get records that have changed or have been added
+ SELECT input.""weather"",
+        input.""email""
+   FROM ""in_table"" INPUT MINUS SELECT snap.""weather"",
+                                      snap.""email""
+   FROM ""curr_snapshot"" snap
+   WHERE ""actual"" = 1 )
+SELECT ""weather"",
+       ""email"" ,
+       $CURR_DATE_TXT AS ""start_date"" ,
+       '9999-12-31 00:00:00' AS ""end_date"" ,
+       1 AS ""actual"" ,
+       0 AS ""is_deleted""
+FROM diff_records;",""
+"9c48e5db35a843334d8de52703b9fe17","us-east-1","5","CREATE OR REPLACE TABLE deleted_records_snapshot AS
+SELECT snap.""weather"",
+       snap.""email"" ,
+       snap.""start_date"" AS ""start_date"" ,
+       $CURR_DATE_TXT AS ""end_date"" ,
+       0 AS ""actual"" ,
+       1 AS ""is_deleted""
+FROM ""curr_snapshot"" snap
+LEFT JOIN ""in_table"" INPUT ON snap.""email""=input.""email""
+WHERE snap.""actual"" = 1
+  AND input.""email"" IS NULL;",""
+"9c48e5db35a843334d8de52703b9fe17","us-east-1","6","CREATE OR REPLACE TABLE updated_snapshots AS
+SELECT snap.""weather"",
+       snap.""email"" ,
+       snap.""start_date"" ,
+       $CURR_DATE_TXT AS ""end_date"" ,
+       0 AS ""actual"" ,
+       0 AS ""is_deleted""
+FROM ""curr_snapshot"" snap
+JOIN changed_records_snapshot INPUT ON snap.""email""=input.""email""
+WHERE snap.""actual"" = 1;",""
+"9c48e5db35a843334d8de52703b9fe17","us-east-1","7","-- final snapshot table
+
+CREATE OR REPLACE TABLE ""final_snapshot"" AS
+SELECT ""email""|| '|' ||""start_date""AS ""snap_pk"" ,
+       ""weather"",
+       ""email"" ,
+       ""start_date"",
+       ""end_date"",
+       ""actual"",
+       ""is_deleted""
+FROM deleted_records_snapshot
+UNION
+SELECT ""email""|| '|' ||""start_date""AS ""snap_pk"" ,
+       ""weather"",
+       ""email"" ,
+       ""start_date"",
+       ""end_date"",
+       ""actual"",
+       ""is_deleted""
+FROM updated_snapshots
+UNION
+SELECT ""email""|| '|' ||""start_date""AS ""snap_pk"" ,
+       ""weather"",
+       ""email"" ,
+       ""start_date"",
+       ""end_date"",
+       ""actual"",
+       ""is_deleted""
+FROM changed_records_snapshot ;",""
+"9c48e5db35a843334d8de52703b9fe17","us-east-1","8","",""
+"3e710e5d17129fe91d0f4993818e9b1e","us-east-1","0","CREATE TABLE ""managers"" AS
+SELECT column1 AS ""email"",
+       column2 AS ""first_name"",
+       column3 AS ""last_name"",
+       column4 AS ""city""
+FROM
+VALUES ('samuel.kozuch@keboola.com', 'Samuel', 'Kozuch', 'Prague'),
+       ('john.doe@company.com', 'John', 'Doe', 'Vancouver'),
+       ('johnny.appleseed@apple.com', 'Johnny', 'Appleseed', 'San Francisco');",""
+"3e710e5d17129fe91d0f4993818e9b1e","us-east-1","1","CREATE TABLE ""weather"" AS
+SELECT column1 AS ""city"",
+       column2 AS ""date"",
+       column3 AS ""low_temp"",
+       column4 AS ""high_temp"",
+       column5 AS ""conditions"",
+       column6 AS ""short_description""
+FROM
+VALUES ('Prague', '2020-07-02', 17, 26, 'overcast', 'Sunny in the morning with a chance of rain in the afternoon.'),
+       ('Vancouver', '2020-07-02', 11, 18, 'cloudy', 'Cloudy skies, few showers in the evening.'),
+       ('San Francisco', '2020-07-02', 12, 19, 'partly cloudy', 'Partly cloudy, with higher wind gusts possible.');",""
+"3e710e5d17129fe91d0f4993818e9b1e","us-east-1","2","CREATE TABLE ""sales"" AS
+SELECT column1 AS ""city"",
+       column2 AS ""date"",
+       column3 AS ""value"",
+       column4 AS ""currency""
+FROM
+VALUES ('Prague', '2020-07-01', '150000', 'CZK'),
+       ('Vancouver', '2020-07-01', '1789', 'CAD'),
+       ('San Francisco', '2020-07-01', '5700', 'USD'),
+       ('Prague', '2020-06-30', '89000', 'CZK'),
+       ('Vancouver', '2020-06-30', '2560', 'CAD'),
+       ('San Francisco', '2020-06-30', '4590', 'USD');",""
+"3e710e5d17129fe91d0f4993818e9b1e","us-east-1","3","CREATE TABLE ""orders"" AS
+SELECT column1 AS ""city"",
+       column2 AS ""date"",
+       column3 AS ""orders"",
+       column4 AS ""value"",
+       column5 AS ""currency""
+FROM
+VALUES ('Prague', '2020-07-02', '5', '100', 'CZK'),
+       ('Vancouver', '2020-07-02', '3', '300', 'CAD'),
+       ('San Francisco', '2020-07-02', '0', '250', 'USD');",""
+"3e710e5d17129fe91d0f4993818e9b1e","us-east-1","4","CREATE TABLE ""labor"" AS
+SELECT column1 AS ""city"",
+       column2 AS ""date"",
+       column3 AS ""scheduled_labor""
+FROM VALUES ('Prague', '2020-07-02', 16),
+            ('Vancouver', '2020-07-02', 27),
+            ('San Francisco', '2020-07-02', 20);",""
+"f958e31ea82ac546f5be1930eeda6497","us-east-1","0","CREATE TABLE ""mailing_list"" AS
+WITH sales   AS (
+    SELECT ""city"",
+           SUM(IFF(""date"" = CURRENT_DATE() - 1, ""value"", 0))::INTEGER || ""currency"" AS ""sales"",
+           SUM(IFF(""date"" = CURRENT_DATE() - 2, ""value"", 0))::INTEGER || ""currency"" AS ""sales_yesterday"",
+           IFF(""sales"" > ""sales_yesterday"", 'increase', 'decrease')                 AS ""inc_dec"",
+           IFF(""sales"" > ""sales_yesterday"", '↗️', '↘️')                             AS ""inc_dec_emoji""
+    FROM ""sales""
+    GROUP BY ""city"", ""currency""
+),
+     orders  AS (
+         SELECT ""city"",
+                ""orders""              AS ""orders_num"",
+                ""value"" || ""currency"" AS ""orders_value""
+         FROM ""orders""
+     ),
+     labor   AS (
+         SELECT ""city"",
+                ""scheduled_labor"" AS ""hours""
+         FROM ""labor""
+     ),
+     weather AS (
+         SELECT ""city"",
+                ""high_temp"" || '°C' AS ""weather_high"",
+                ""low_temp"" || '°C'  AS ""weather_low"",
+                ""short_description"" AS ""weather_description"",
+                CASE ""conditions""
+                    WHEN 'overcast' THEN '🌤'
+                    WHEN 'cloudy' THEN '🌥'
+                    WHEN 'partly cloudy' THEN '🌤'
+                END                 AS ""weather_emoji""
+         FROM ""weather""
+     )
+SELECT ""email"",
+       ""first_name"" || ' ' || ""last_name"" AS ""name"",
+       m.""city"",
+       TO_CHAR(CURRENT_DATE(), 'DY')      AS ""day"",
+       CONCAT(TO_CHAR(CURRENT_DATE(), 'MON DD'),
+              CASE TO_CHAR(CURRENT_DATE(), 'DD')
+                  WHEN '01' THEN 'st'
+                  WHEN '02' THEN 'nd'
+                  WHEN '03' THEN 'rd'
+                  ELSE 'th'
+              END
+           )                              AS ""date_string"",
+       CONCAT_WS(' | ', CURRENT_DATE(), 'Weather: {{weather_emoji}}', 'Sales: {{inc_dec_emoji}}',
+                 'Labor: 💪🏼')           AS ""subject"",
+       'manager_email.html'               AS ""html_file"",
+       s.""sales"",
+       s.""sales_yesterday"",
+       s.""inc_dec"",
+       s.""inc_dec_emoji"",
+       o.""orders_num"",
+       o.""orders_value"",
+       l.""hours"",
+       w.""weather_high"",
+       w.""weather_low"",
+       w.""weather_description"",
+       w.""weather_emoji""
+FROM ""managers"" m
+     INNER JOIN sales s ON m.""city"" = s.""city""
+     INNER JOIN orders o ON m.""city"" = o.""city""
+     INNER JOIN labor l ON m.""city"" = l.""city""
+     INNER JOIN weather w ON m.""city"" = w.""city"";",""
+"56c290432581c697a1bbbd3974eed13c","us-east-1","0","CREATE TABLE ""quality"" AS
+SELECT column1 AS ""table"",
+       column2 AS ""column"",
+       column3 AS ""issue"",
+       column4 AS ""issue_count""
+FROM VALUES ('order_item', 'product_id', 'Value in \'product_id\' column not found in products table.', 3),
+            ('order_item', 'order_id', 'Order not found in master sales table.', 1),
+            ('invoice', 'invoice_id', 'Duplicate values detected.', 14),
+            ('user', 'user_email', 'Invalid email.', 1)",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","0","-- exclude unretrievable orders from processing https://bataeurope.atlassian.net/browse/FSP-85
+DELETE FROM ""orderitem_qa_issues"" WHERE VALUE IN ('0027200002501','0027200002401');",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","1","DELETE FROM ""order_qa_issues"" WHERE VALUE IN ('0027200002501','0027200002401');",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","2","ALTER SESSION SET TIMESTAMP_OUTPUT_FORMAT = 'YYYY-MM-DD HH:MI:SS';",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","3","CREATE TABLE ""qa_issues_report_all"" AS
+SELECT 'discount' AS table_name
+     , ""ROW_ID""
+     , ORDER_ID
+     , ""COL_NAME""
+     , ""VALUE""
+     , ""ISSUE""
+     , FTP_FILE
+     , CASE WHEN ""FTP_FILE"" LIKE 'prod-test%'
+THEN TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 7), '.', 1), 'YYYYMMDDHHMISS')
+ELSE TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 6), '.', 1), 'YYYYMMDDHHMISS') END::DATE as file_date
+FROM ""discount_qa_issues""
+UNION
+SELECT 'order' AS table_name
+	 , ""ROW_ID""
+     , ORDER_ID
+     , ""COL_NAME""
+     , ""VALUE""
+     , ""ISSUE""
+     , FTP_FILE
+     , CASE WHEN ""FTP_FILE"" LIKE 'prod-test%'
+THEN TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 7), '.', 1), 'YYYYMMDDHHMISS')
+ELSE TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 6), '.', 1), 'YYYYMMDDHHMISS') END::DATE as file_date
+FROM ""order_qa_issues""
+UNION
+SELECT 'order_item' AS table_name
+	 , ""ROW_ID""
+     , ORDER_ID
+     , ""COL_NAME""
+     , ""VALUE""
+     , ""ISSUE""
+     , FTP_FILE
+     , CASE WHEN ""FTP_FILE"" LIKE 'prod-test%'
+THEN TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 7), '.', 1), 'YYYYMMDDHHMISS')
+ELSE TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 6), '.', 1), 'YYYYMMDDHHMISS') END::DATE as file_date
+FROM ""orderitem_qa_issues""
+UNION
+-- discount ref integrity
+SELECT 'discount'                             AS table_name
+	 , d.""id"" AS ""ROW_ID""
+     , SPLIT_PART(src.""order_item_id"",'_',1) AS ORDER_ID
+     , 'id'                                   AS col_name
+     , d.""id""                                 AS VALUE
+     , 'Ref integrity. Value does not exist.' AS ISSUE
+     , src.""ftp_filename"" AS FTP_FILE
+     , CASE WHEN ""FTP_FILE"" LIKE 'prod-test%'
+THEN TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 7), '.', 1), 'YYYYMMDDHHMISS')
+ELSE TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 6), '.', 1), 'YYYYMMDDHHMISS') END::DATE as file_date
+
+FROM ""out_discount"" d
+       LEFT JOIN ""out_orderitems"" oi
+                 ON d.""itemid"" = oi.ID
+            JOIN ""order-discount-ww"" src
+                ON d.""id"" =  MD5('WW_IT' || SPLIT_PART(src.""order_item_id"",'_',1) || '|' || SPLIT_PART(src.""order_item_id"",'_',2) || '|' ||
+    'Created' ||src.""type"" || src.""coupon_group"")
+WHERE oi.ID IS NULL
+UNION
+
+SELECT
+       'discount' AS TABLE_NAME
+     , ""order_item_id""::TEXT AS ROW_ID
+     , SPLIT_PART(d.""order_item_id"",'_',1) AS ORDER_ID
+     , 'order_item_id' AS COL_NAME
+     ,""order_item_id""::TEXT AS VALUE
+     , 'Ref integrity. Value does not exist.' AS ISSUE
+     , d.""ftp_filename"" AS FTP_FILE
+     , CASE WHEN ""FTP_FILE"" LIKE 'prod-test%'
+THEN TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 7), '.', 1), 'YYYYMMDDHHMISS')
+ELSE TO_TIMESTAMP(SPLIT_PART(SPLIT_PART(""FTP_FILE"", '-', 6), '.', 1), 'YYYYMMDDHHMISS') END::DATE as file_date
+FROM ""order-discount-ww"" d
+left JOIN ""order-ww"" o
+ON SPLIT_PART(d.""order_item_id"", '_', 1)=o.""order_id""
+WHERE o.""order_id"" is null;",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","4","CREATE TABLE cancelled_orders AS
+SELECT DISTINCT
+    ""order_id""
+FROM ""order-item-ww""
+WHERE
+        ""decline_reason"" IN ('CancelInventoryDiscrepancy',
+                             'Articolo Non Disponibile',
+                             'AVL', 'Articolo Difettoso', 'TC', 'DMG');",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","5","-- filter out cancelled orders that are not falling to RPE
+-- https://bataeurope.atlassian.net/browse/FSP-33
+DELETE FROM ""qa_issues_report_all"" qa USING cancelled_orders co WHERE qa.ORDER_ID=co.""order_id""
+--AND file_date NOT BETWEEN DATEADD( DAY, -37, current_date ) AND DATEADD( DAY, -30, current_date )
+AND ISSUE IN ('Order not found in RPE Master Sales table.') OR COL_NAME = 'COGS'
+;",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","6","CREATE TABLE ""qa_issues_direct_report_agg"" AS
+SELECT table_name
+     , ""COL_NAME""
+     , ""ISSUE""
+     , count(*) AS issue_cnt
+FROM ""qa_issues_report_all""
+WHERE file_date > DATEADD(DAY,-8, current_date)
+GROUP BY 1, 2, 3
+ORDER BY issue_cnt DESC;",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","7","INSERT INTO ""qa_issues_direct_report_agg""
+SELECT table_name
+     , ""COL_NAME""
+     , ""ISSUE""
+     , count(*) AS issue_cnt
+FROM ""qa_issues_report_all""
+WHERE file_date BETWEEN DATEADD( DAY, -37, current_date ) AND DATEADD( DAY, -30, current_date )
+AND ISSUE = 'Order not found in RPE Master Sales table.'
+GROUP BY 1, 2, 3;",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","8","CREATE TABLE  ""mapping_issues_detail"" AS
+SELECT
+    DISTINCT table_name, COL_NAME, VALUE, ISSUE, FTP_FILE
+FROM ""qa_issues_report_all""
+WHERE COL_NAME NOT IN ('COGS','store_id', 'order_id', 'article_id', 'ArticleID', 'original_price', 'amount')
+and ISSUE not IN ('Referenced Item ID does not have Created event', 'Duplicate values') AND ISSUE NOT LIKE ('Referenced Item ID from event%')
+;",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","9","CREATE OR REPLACE TABLE  ""processing_issues"" AS
+SELECT
+    DISTINCT table_name,ROW_ID,ORDER_ID, COL_NAME, VALUE, ISSUE, FTP_FILE, file_date
+FROM ""qa_issues_report_all""
+WHERE COL_NAME IN ('store_id', 'order_id', 'order_item', 'article_id', 'original_price', 'amount','event', 'COGS', 'discount')
+AND file_date > DATEADD(DAY,-8, current_date);",""
+"8a3ac94d5678dcf4371b0b6e68b38ac2","us-east-1","10","INSERT INTO ""processing_issues""
+SELECT table_name,ROW_ID,ORDER_ID, COL_NAME, VALUE, ISSUE, FTP_FILE, file_date
+FROM ""qa_issues_report_all""
+WHERE file_date BETWEEN DATEADD( DAY, -37, current_date ) AND DATEADD( DAY, -30, current_date )
+AND ISSUE = 'Order not found in RPE Master Sales table.';",""
+"76bf29824fc22e3715ab422a41961f51","us-east-1","0","import pandas as pd
+import csv
+
+with open('in/tables/quality.csv', mode='rt', encoding='utf-8') as in_file:
+    # Read the csv file in
+    df = pd.read_csv(in_file)
+
+    html_p1 = """"""
+    <html>
+<head>
+    <meta content=""text/html; charset=UTF-8"" http-equiv=""content-type"">
+    <style type=""text/css"">
+        ol{margin:0;padding:0}table td,table th{padding:0}.c2{border-right-style:solid;padding:2pt 2pt 2pt 2pt;border-bottom-color:#cccccc;border-top-width:1pt;border-right-width:1pt;border-left-color:#cccccc;vertical-align:bottom;border-right-color:#cccccc;border-left-width:1pt;border-top-style:solid;border-left-style:solid;border-bottom-width:1pt;width:25.2pt;border-top-color:#cccccc;border-bottom-style:solid}.c9{border-right-style:solid;padding:2pt 2pt 2pt 2pt;border-bottom-color:#cccccc;border-top-width:1pt;border-right-width:1pt;border-left-color:#cccccc;vertical-align:bottom;border-right-color:#cccccc;border-left-width:1pt;border-top-style:solid;border-left-style:solid;border-bottom-width:1pt;width:93pt;border-top-color:#cccccc;border-bottom-style:solid}.c14{border-right-style:solid;padding:2pt 2pt 2pt 2pt;border-bottom-color:#cccccc;border-top-width:1pt;border-right-width:1pt;border-left-color:#cccccc;vertical-align:bottom;border-right-color:#cccccc;border-left-width:1pt;border-top-style:solid;border-left-style:solid;border-bottom-width:1pt;width:571.8pt;border-top-color:#cccccc;border-bottom-style:solid}.c3{color:#000000;font-weight:400;text-decoration:none;vertical-align:baseline;font-size:8pt;font-family:""Arial"";font-style:normal}.c5{color:#000000;font-weight:400;text-decoration:none;vertical-align:baseline;font-size:10pt;font-family:""Arial"";font-style:normal}.c10{color:#000000;font-weight:400;text-decoration:none;vertical-align:baseline;font-size:11pt;font-family:""Arial"";font-style:normal}.c6{color:#000000;font-weight:700;text-decoration:none;vertical-align:baseline;font-family:""Arial"";font-style:normal}.c1{padding-top:0pt;padding-bottom:0pt;line-height:1.0;text-align:left;height:11pt}.c16{padding-top:0pt;padding-bottom:0pt;line-height:1.15;text-align:right}.c13{margin-left:-43.5pt;border-spacing:0;border-collapse:collapse;margin-right:auto}.c0{padding-top:0pt;padding-bottom:0pt;line-height:1.15;text-align:left}.c15{background-color:#ffffff;max-width:468pt;padding:72pt 72pt 72pt 72pt}.c11{margin-left:-45pt;orphans:2;widows:2}.c12{orphans:2;widows:2}.c4{font-size:8pt}.c7{height:15pt}.c8{height:11pt}.title{padding-top:0pt;color:#000000;font-size:26pt;padding-bottom:3pt;font-family:""Arial"";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}.subtitle{padding-top:0pt;color:#666666;font-size:15pt;padding-bottom:16pt;font-family:""Arial"";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}li{color:#000000;font-size:11pt;font-family:""Arial""}p{margin:0;color:#000000;font-size:11pt;font-family:""Arial""}h1{padding-top:20pt;color:#000000;font-size:20pt;padding-bottom:6pt;font-family:""Arial"";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h2{padding-top:18pt;color:#000000;font-size:16pt;padding-bottom:6pt;font-family:""Arial"";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h3{padding-top:16pt;color:#434343;font-size:14pt;padding-bottom:4pt;font-family:""Arial"";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h4{padding-top:14pt;color:#666666;font-size:12pt;padding-bottom:4pt;font-family:""Arial"";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h5{padding-top:12pt;color:#666666;font-size:11pt;padding-bottom:4pt;font-family:""Arial"";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h6{padding-top:12pt;color:#666666;font-size:11pt;padding-bottom:4pt;font-family:""Arial"";line-height:1.15;page-break-after:avoid;font-style:italic;orphans:2;widows:2;text-align:left}
+
+    </style>
+</head>
+<body class=""c15""><p class=""c0 c11""><span class=""c10"">Hello everyone.</span></p>
+<p class=""c0 c11 c8""><span class=""c10""></span></p>
+<p class=""c0 c11""><span class=""c10"">Please find below current QA report, generated on {{report_date}}:</span>
+</p>
+<p class=""c0 c11 c8""><span class=""c10""></span></p>
+<p class=""c0 c11""><span class=""c10"">The numbers represent # of rows in the source data where the issues is found. The report contains data for orders processed in last 7 days. The full detailed report is available <a href=""https://docs.google.com/spreadsheets/d/1f2l7ziFfIH_pLmFo72YEIwTtP2-gHei22UqSInj5VBk"">here</a>.</span>
+</p>
+<p class=""c0 c12 c8""><span class=""c3""></span></p>
+""""""
+    
+html_p2=""""""
+<p class=""c0 c8 c12""><span class=""c3""></span></p>
+<p class=""c0 c12 c8""><span class=""c3""></span></p>
+<p class=""c0 c11""><span class=""c10"">Have a good day!</span></p>
+<p class=""c0 c11 c8""><span class=""c10""></span></p>
+<p class=""c0 c11""><span>Keboola Team</span></p></body>
+</html>
+    """"""
+pd.options.display.float_format = '{:,.0f}'.format
+final_html = html_p1  + df.to_html(index=False, sparsify=True, na_rep='--', col_space =80) + html_p2
+
+with open('out/files/html-report.html', mode='wt', encoding='utf-8') as out_file:
+    out_file.write(final_html)
+    
+
+    # write statefile
+import json
+with open('out/files/html-report.html.manifest', 'w') as outfile:
+    man = {
+    ""is_public"": True,
+    ""is_permanent"": False,
+    ""is_encrypted"": False,
+    ""notify"": False,
+    ""tags"": [
+        ""mailgun_dacheck""
+    ]
+    }
+    json.dump(man, outfile)
+    
+
+",""
+"89f3705b8ceb59f53a8e012d76cee6a7","us-east-1","0","CREATE TABLE ""mailing_list"" AS
+SELECT column1                          AS ""email"",
+       column2                          AS ""subject"",
+       column3                          AS ""report_date"",
+       column4                          AS ""html_file"",
+       '_tableattachment_quality.csv' AS ""attachments""
+FROM
+VALUES ('samuel.kozuch@keboola.com', 'Data Quality Check', '2020-07-02', 'html_report.html')",""
+"2d585f9de5b484e8c19e7d03a06c8299","us-east-1","0","-- This is a sample query.
+-- Adjust accordingly to your input mapping, output mapping
+-- and desired functionality.
+-- CREATE TABLE ""out_table"" AS SELECT * FROM ""in_table"";",""
+"9904ecefac49efff7c763df3fbb3c8ca","us-east-1","0","import csv
+
+_rdr = csv.DictReader(open('/data/in/tables/test.csv'))
+_wrt = csv.DictWriter(open('/data/out/tables/processed.csv', 'w'), fieldnames=_rdr.fieldnames)
+_wrt.writeheader()
+
+for row in _rdr:
+    _wrt.writerow(row)",""
+"654486ddc2e5ffade0789223d7990cb3","us-east-1","0","-- This is a sample query.
+-- Adjust accordingly to your input mapping, output mapping
+-- and desired functionality.
+-- CREATE TABLE ""out_table"" AS SELECT * FROM ""in_table"";",""

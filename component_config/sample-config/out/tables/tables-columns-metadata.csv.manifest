@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["id"], "columns": ["table_id", "region", "project_id", "column", "id", "key", "value", "provider", "timestamp"]}

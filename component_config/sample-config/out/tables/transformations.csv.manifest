@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["id", "region", "project_id"], "columns": ["id", "number", "region", "project_id", "bucket_id", "name", "description", "packages", "requires", "backend", "type", "phase", "disabled", "version", "created", "creator_token_id", "creator_token_description", "change_description"]}

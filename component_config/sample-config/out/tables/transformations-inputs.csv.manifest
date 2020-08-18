@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["transformation_id", "region", "source", "destination"], "columns": ["transformation_id", "region", "source", "destination", "load_type", "filter_where_column", "filter_where_values", "filter_where_operator", "filter_changed_since", "input_columns"]}

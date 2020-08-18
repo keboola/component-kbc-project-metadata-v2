@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["token_id", "region", "project_id"], "columns": ["token_id", "region", "project_id", "event_id", "event", "component", "message", "description", "type", "event_created", "configuration_id", "object_id", "object_name", "object_type", "uri"]}

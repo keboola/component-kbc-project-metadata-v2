@@ -1,1 +1,1 @@
-Keboola Metadata extractor to download metadata from Keboola's APIs.
+Keboola metadata extractor downloads metadata about all objects in your Keboola project.

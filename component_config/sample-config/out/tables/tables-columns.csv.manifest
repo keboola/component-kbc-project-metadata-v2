@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["table_id", "region", "project_id", "column"], "columns": ["table_id", "region", "project_id", "column"]}

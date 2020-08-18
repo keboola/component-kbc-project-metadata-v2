@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["transformation_id", "region", "query_index"], "columns": ["transformation_id", "region", "query_index", "query", "bucket_id"]}

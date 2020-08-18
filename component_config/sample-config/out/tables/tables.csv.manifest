@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["id", "region", "project_id"], "columns": ["id", "region", "project_id", "name", "primary_key", "created", "last_import_date", "last_change_date", "rows_count", "data_size_bytes", "is_alias", "is_aliasable", "bucket_id", "bucket_name", "bucket_stage", "bucket_created", "bucket_last_change_date", "bucket_is_read_only"]}

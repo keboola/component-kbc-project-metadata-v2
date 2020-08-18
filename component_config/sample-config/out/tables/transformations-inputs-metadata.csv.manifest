@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["transformation_id", "region", "source", "destination", "column"], "columns": ["transformation_id", "region", "source", "destination", "column", "datatype", "length", "convert_empty_values_to_null"]}

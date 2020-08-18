@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["id", "region", "project_id"], "columns": ["id", "region", "project_id", "run_with_token_id", "component", "configuration_id", "last_run", "creator_token_id", "creator_token_description", "cooldown_period_minutes"]}

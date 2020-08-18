@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["id", "region", "project_id"], "columns": ["id", "region", "project_id", "name", "description", "version", "created", "creator_token_id", "creator_token_description", "change_description", "current_version_created", "current_version_creator_token_id", "current_version_creator_token_description"]}

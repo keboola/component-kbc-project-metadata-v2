@@ -1,0 +1,30 @@
+"90dd4fd4e6d33ccf4d96134d996c156f","583147626","us-east-1","5150","533332197","SNFK #1","","","","snowflake","simple","1","False","6","2020-03-26T16:48:24+0100","147801","samuel.kozuch@keboola.com","Rollback to version 3 (via configuration rollback to version 16)"
+"f898a5372fd1d789431adcd2d5758302","592570550","us-east-1","5150","533332197","Pivot data","#### TODO
+
+1. Fix parsing - line 34 should be changed to
+```
+print('hello world')
+```
+
+2. Add documentation","pyarrow","","docker","python","1","False","14","2020-04-28T14:22:32+0200","147801","samuel.kozuch@keboola.com","Rollback to version 11 (via configuration rollback to version 16)"
+"524d6771a4c019024584d0ca0f6591f5","624704544","us-east-1","5150","533332197","t","","","","docker","r","","","1","2020-08-17T09:29:47+0200","147801","samuel.kozuch@keboola.com","Create transformation t"
+"b03be817db3d09bf4507c9f355ed546b","592800464","us-east-1","5150","533332206","[1] UDF $$","","","","snowflake","simple","1","False","9","2020-04-29T09:18:58+0200","147801","samuel.kozuch@keboola.com","Delete output mapping in [1] UDF $$"
+"93ea562db6cbb97a33c829baccf4b44d","592801441","us-east-1","5150","533332206","[1] UDF '","","","","snowflake","simple","1","False","4","2020-04-29T09:25:54+0200","147801","samuel.kozuch@keboola.com","Change Queries in [1] UDF '"
+"68ad6517ee4e2c3d24cf89be131882c6","597915922","us-east-1","5150","597911879","Variables Test","","","","docker","python","1","False","2","2020-05-17T19:23:32+0200","147801","samuel.kozuch@keboola.com","Change Scripts in Variables Test"
+"9c48e5db35a843334d8de52703b9fe17","602395431","us-east-1","5150","602395430","SCD transformation","","","","snowflake","simple","1","False","1","2020-06-02T19:17:32+0200","147801","samuel.kozuch@keboola.com","Row 602395431 added"
+"3e710e5d17129fe91d0f4993818e9b1e","611018918","us-east-1","5150","611018899","0 - Prepare tables","","","","snowflake","simple","1","True","13","2020-07-02T16:26:26+0200","147801","samuel.kozuch@keboola.com","Transformation 0 - Prepare tables disabled"
+"f958e31ea82ac546f5be1930eeda6497","611026825","us-east-1","5150","611018899","1 - Prepare Mailing List","","","","snowflake","simple","1","False","6","2020-07-02T17:07:41+0200","147801","samuel.kozuch@keboola.com","Change Queries in 1 - Prepare Mailing List"
+"56c290432581c697a1bbbd3974eed13c","611039108","us-east-1","5150","611039074","0 - Prepare Tables","","","","snowflake","simple","1","True","5","2020-07-02T18:05:36+0200","147801","samuel.kozuch@keboola.com","Transformation 0 - Prepare Tables disabled"
+"8a3ac94d5678dcf4371b0b6e68b38ac2","611040025","us-east-1","5150","611039074","1 - Data Quality Check","","","","snowflake","simple","1","False","4","2020-07-02T18:10:59+0200","147801","samuel.kozuch@keboola.com","Create output mapping in 1 - Data Quality Check"
+"76bf29824fc22e3715ab422a41961f51","611040613","us-east-1","5150","611039074","2 - Prepare HTML","","","","docker","python","2","False","5","2020-07-02T18:12:42+0200","147801","samuel.kozuch@keboola.com","Change Phase in 2 - Prepare HTML"
+"89f3705b8ceb59f53a8e012d76cee6a7","611041641","us-east-1","5150","611039074","2 - Prepare Mailing List","","","","snowflake","simple","2","False","7","2020-07-02T18:15:35+0200","147801","samuel.kozuch@keboola.com","Change Queries in 2 - Prepare Mailing List"
+"2d585f9de5b484e8c19e7d03a06c8299","583147626","us-east-1","5150","624703816","SNFK #1","","","","snowflake","simple","1","False","1","","0","","Copied from configuration ""[PROD] Transformation"" (533332197) version 24"
+"9904ecefac49efff7c763df3fbb3c8ca","592570550","us-east-1","5150","624703816","Pivot data","#### TODO
+
+1. Fix parsing - line 34 should be changed to
+```
+print('hello world')
+```
+
+2. Add documentation","pyarrow","","docker","python","1","False","1","","0","","Copied from configuration ""[PROD] Transformation"" (533332197) version 24"
+"654486ddc2e5ffade0789223d7990cb3","594809470","us-east-1","5150","624703816","SNFK #2","","","","snowflake","simple","1","False","1","","0","","Copied from configuration ""[PROD] Transformation"" (533332197) version 24"

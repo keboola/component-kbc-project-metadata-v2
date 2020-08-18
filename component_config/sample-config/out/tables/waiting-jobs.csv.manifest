@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["id", "region"], "columns": ["id", "region", "run_id", "project_id", "project_name", "token_id", "token_description", "component", "status", "created_time", "start_time", "end_time", "params_configuration_id", "params_configuration_bucket_id"]}

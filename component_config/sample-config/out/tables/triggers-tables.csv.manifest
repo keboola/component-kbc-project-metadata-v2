@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["trigger_id", "region", "project_id"], "columns": ["trigger_id", "region", "project_id", "table_id"]}

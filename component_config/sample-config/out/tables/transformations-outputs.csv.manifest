@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["transformation_id", "region", "destination", "source"], "columns": ["transformation_id", "region", "destination", "source", "primary_key", "incremental_load", "delete_where_column", "delete_where_operator", "delete_where_values"]}

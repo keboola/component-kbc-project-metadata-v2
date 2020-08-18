@@ -10,12 +10,12 @@
     "properties": {
         "tokens": {
             "type": "array",
-            "title": "List of Storage tokens",
-            "description": "List of Storage tokens, defining the projects that will be scanned. Transformation Component and Storage access needed.",
+            "title": "Storage Tokens",
+            "description": "A list of Storage tokens from projects for which the metadata will be downloaded. <a href=\"https://help.keboola.com/management/project/tokens/\">Follow our guide</a> to create or manage storage tokens.",
             "items": {
                 "format": "grid",
                 "type": "object",
-                "title": "Token",
+                "title": "Storage Token",
                 "required": [
                     "#key",
                     "region"
@@ -24,7 +24,7 @@
                     "#key": {
                         "type": "string",
                         "format": "password",
-                        "title": "Token Key",
+                        "title": "Storage Token",
                         "propertyOrder": 1000
                     },
                     "region": {
@@ -39,7 +39,7 @@
                             ]
                         },
                         "type": "string",
-                        "title": "Project region",
+                        "title": "Project Region",
                         "default": "EU",
                         "propertyOrder": 2000
                     }
@@ -49,13 +49,13 @@
         "master_token": {
             "type": "array",
             "propertyOrder": 100,
-            "title": "Master token",
-            "description": "Set master token to analyze all project available in the organization. Note that this overrides any tokens explicitly specified in the List of Storage tokens section.",
+            "title": "Master Token",
+            "description": "If defined, using this master token, metadata  will be downloaded for all projects in the organization defined. Note that this overrides any tokens explicitly specified in the <strong>Storage Tokens</strong> section.<br>You can create an access token using <a href=\"https://help.keboola.com/management/account/#tokens\">following the guide on our help page</a>.",
             "maxItems": 1,
             "items": {
                 "format": "grid",
                 "type": "object",
-                "title": "Token",
+                "title": "Access Token",
                 "required": [
                     "#token",
                     "org_id",
@@ -65,12 +65,12 @@
                     "#token": {
                         "type": "string",
                         "format": "password",
-                        "title": "Token Key",
+                        "title": "Master Access Token",
                         "propertyOrder": 1000
                     },
                     "org_id": {
                         "type": "string",
-                        "title": "Organization id",
+                        "title": "Organization ID",
                         "propertyOrder": 1200
                     },
                     "region": {
@@ -85,7 +85,7 @@
                             ]
                         },
                         "type": "string",
-                        "title": "Project region",
+                        "title": "Org. Region",
                         "default": "EU",
                         "propertyOrder": 2000
                     }
@@ -114,57 +114,62 @@
                     "format": "checkbox",
                     "title": "Get Tokens",
                     "propertyOrder": 2000,
-                    "description": "Requires master storage token or token with <strong>canManageTokens</strong> permissions."
+                    "description": "Downloads information about all tokens in projects.</br>This option requires a master token, a master storage token or a general storage token with <strong><i>canManageTokens</i></strong> permissions."
                 },
                 "get_tokens_last_events": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get Tokens Last Events",
                     "propertyOrder": 2100,
-                    "description": "Downloads last event for each token. Required: \"Get Tokens\" must be checked."
+                    "description": "Downloads last event for each token.<br>This options requires <strong>Get Tokens</strong> option to be enabled."
                 },
                 "get_orchestrations": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get Orchestrations",
-                    "propertyOrder": 2500
+                    "propertyOrder": 2500,
+                    "description": "Downloads orchestrations, their tasks and notifications."
                 },
                 "get_triggers": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get Orchestration Triggers",
-                    "propertyOrder": 2750
+                    "propertyOrder": 2750,
+                    "description": "Downloads triggers and tables for event triggered orchestrations."
                 },
                 "get_waiting_jobs": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get Waiting Jobs",
-                    "propertyOrder": 3000
+                    "propertyOrder": 3000,
+                    "description": "Downloads all waiting and processing jobs."
                 },
                 "get_tables": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get Tables",
-                    "propertyOrder": 3500
+                    "propertyOrder": 3500,
+                    "description": "Downloads data and metadata about tables in storage."
                 },
                 "get_columns": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get Columns",
-                    "description": "Downloads columns and column metadata for each table. Option <strong>Get Tables</strong> needs to be enabled.",
-                    "propertyOrder": 3750
+                    "propertyOrder": 3750,
+                    "description": "Downloads data and metadata about columns in storage.<br>This option requires <strong>Get Tables</strong> option to be enabled."
                 },
                 "get_all_configurations": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get All Configurations",
-                    "propertyOrder": 4000
+                    "propertyOrder": 4000,
+                    "description": "Downloads all configurations in a project."
                 },
                 "get_transformations": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get Transformations and Their Details",
-                    "description": "Downloads data to the transformation level, including input and output mappings.",
+                    "description": "Downloads data to the transformation level, including input and output mappings, and queries.",
                     "propertyOrder": 4500
                 },
                 "get_project_users": {
@@ -172,14 +177,14 @@
                     "format": "checkbox",
                     "title": "Get Project Users",
                     "propertyOrder": 5000,
-                    "description": "Requires management token."
+                    "description": "Downloads information about project users.<br>The option requires a master access token."
                 },
                 "get_organization_users": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get Organization Users",
                     "propertyOrder": 5500,
-                    "description": "Requires management token."
+                    "description": "Downloads information about organization users.<br>The option requires a master access token."
                 }
             }
         },

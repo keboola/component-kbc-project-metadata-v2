@@ -1,0 +1,1 @@
+{"incremental": false, "primary_key": ["id", "region"], "columns": ["id", "region", "project_id", "created", "refreshed", "description", "is_master_token", "can_manage_buckets", "can_manage_tokens", "can_read_all_file_uploads", "can_purge_trash", "expires", "is_expired", "is_disabled", "daily_capacity", "creator_token_id", "creator_token_description", "admin_id", "admin_name"]}
