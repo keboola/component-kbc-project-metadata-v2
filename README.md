@@ -40,7 +40,7 @@ Specifying master access token allows to download data for all projects in the s
 
 Master token automatically accesses all projects within the organization and creates temporary storage tokens to download the necessary data. These tokens can be distinguished by their name, which follows `[PROJECT_NAME]_Telemetry_token` naming convention. All of the automatically created tokens have an expiration of 26 hours and are **re-used by the extractor**, if the extractor is ran multiple times a day.
 
-Along with master access token, an ID of the organization must be provided (from URL) as well as region, where the organization is located.
+Along with master access token, an ID of the organization must be provided as well as region, where the organization is located. The ID of the organization can be found in the URL of the organization page - follow our [help page article](https://help.keboola.com/management/organization/) on how to access it - e.g. in URL [https://connection.keboola.com/admin/organizations/1234](https://connection.keboola.com/admin/organizations/1234), `1234` is the ID of the organization.
 
 #### Authenticating with storage tokens
 
