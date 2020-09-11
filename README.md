@@ -21,7 +21,7 @@ and allows to download information about:
 
 ## Configuration
 
-To configure the extractor, either [a master access token (management token)](https://help.keboola.com/management/account/#tokens) is needed or an [array of storage tokens](https://help.keboola.com/management/project/tokens/) for all projects, for which metadata should be downloaded. Additionally, you'll need to be able to specify the ID of your organization and region, where your projects are located.
+To configure the extractor, either [a management token](https://help.keboola.com/management/account/#tokens) is needed or an [array of storage tokens](https://help.keboola.com/management/project/tokens/) for all projects, for which metadata should be downloaded. Additionally, you'll need to be able to specify the ID of your organization and region, where your projects are located.
 
 A sample of the configuration can be found in the [component repository](https://bitbucket.org/kds_consulting_team/kds-team.ex-kbc-project-metadata-v2/src/master/component_config/sample-config/).
 
@@ -29,18 +29,18 @@ A sample of the configuration can be found in the [component repository](https:/
 
 The application accepts either one of the two options:
 
-1. one master access token,
+1. one management token,
 2. any number of storage tokens.
 
-If both options are specified, master access token is prioritized and storage tokens are disregarded.
+If both options are specified, management token is prioritized and storage tokens are disregarded.
 
-#### Authenticating with master access token (management token)
+#### Authenticating with management token
 
-Specifying master access token allows to download data for all projects in the specified organization. The user, whose access token is used in the configuration, **must be part of the organization**, for which the data should be downloaded. If user is not part of the organization, the extractor will not be able to access the organization data and hence won't be able to download necessary metadata.
+Specifying management token allows to download data for all projects in the specified organization. The user, whose access token is used in the configuration, **must be part of the organization**, for which the data should be downloaded. If user is not part of the organization, the extractor will not be able to access the organization data and hence won't be able to download necessary metadata.
 
-Master token automatically accesses all projects within the organization and creates temporary storage tokens to download the necessary data. These tokens can be distinguished by their name, which follows `[PROJECT_NAME]_Telemetry_token` naming convention. All of the automatically created tokens have an expiration of 26 hours and are **re-used by the extractor**, if the extractor is ran multiple times a day.
+The management token automatically accesses all projects within the organization and creates temporary storage tokens to download the necessary data. These tokens can be distinguished by their name, which follows `[PROJECT_NAME]_Telemetry_token` naming convention. All of the automatically created tokens have an expiration of 26 hours and are **re-used by the extractor**, if the extractor is ran multiple times a day.
 
-Along with master access token, an ID of the organization must be provided as well as region, where the organization is located. The ID of the organization can be found in the URL of the organization page - follow our [help page article](https://help.keboola.com/management/organization/) on how to access it - e.g. in URL [https://connection.keboola.com/admin/organizations/1234](https://connection.keboola.com/admin/organizations/1234), `1234` is the ID of the organization.
+Along with a management token, an ID of the organization must be provided as well as region, where the organization is located. The ID of the organization can be found in the URL of the organization page - follow our [help page article](https://help.keboola.com/management/organization/) on how to access it - e.g. in URL [https://connection.keboola.com/admin/organizations/1234](https://connection.keboola.com/admin/organizations/1234), `1234` is the ID of the organization.
 
 #### Authenticating with storage tokens
 
@@ -53,7 +53,7 @@ The metadata extractor allows to download an extended set of objects from the Ke
 - Get Tokens (`get_tokens`)
     - **description**: the option downloads data about all storage tokens present in the project
     - **table(s)**: `tokens`
-    - **requirements**: this option requires either a master access token, a master storage token or a regular storage token with `canManageTokens` permissions
+    - **requirements**: this option requires either a management token, a master storage token or a regular storage token with `canManageTokens` permissions
     - **use case**: monitor all tokens in the project to prevent security breaches
 - Get Tokens Last Events (`get_tokens_last_events`)
     - **description**: the option downloads data about last one event for each of the tokens in the project
@@ -98,12 +98,12 @@ The metadata extractor allows to download an extended set of objects from the Ke
 - Get Project Users (`get_project_users`)
     - **description**: downloads data about users and their access to projects
     - **table(s)**: `project-users`
-    - **requirements**: a master access token
+    - **requirements**: a management access token
     - **use case**: monitor users' access to projects
 - Get Organization Users (`get_organization_users`)
     - **description**: downloads data about users belonging to the specified organization
     - **table(s)**: `organization-users`
-    - **requirements**: a master access token
+    - **requirements**: a management token
     - **use case**: monitor users' access to organization
 
 ## Development

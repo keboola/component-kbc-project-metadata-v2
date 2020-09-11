@@ -49,8 +49,8 @@
         "master_token": {
             "type": "array",
             "propertyOrder": 100,
-            "title": "Master Token",
-            "description": "If defined, using this master token, metadata  will be downloaded for all projects in the organization defined. Note that this overrides any tokens explicitly specified in the <strong>Storage Tokens</strong> section.<br>You can create an access token using <a href=\"https://help.keboola.com/management/account/#tokens\">following the guide on our help page</a>.",
+            "title": "Management Token",
+            "description": "If defined, using this management token, metadata  will be downloaded for all projects in the organization defined. Note that this overrides any tokens explicitly specified in the <strong>Storage Tokens</strong> section.<br>You can create a management token <a href=\"https://help.keboola.com/management/account/#tokens\">following the guide on our help page</a>.",
             "maxItems": 1,
             "items": {
                 "format": "grid",
