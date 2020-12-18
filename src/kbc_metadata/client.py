@@ -9,12 +9,14 @@ DEFAULT_TOKEN_EXPIRATION = 26 * 60 * 60  # Default token expiration set to 26 ho
 
 BASE_URL = {
     'eu-central-1': 'https://connection.eu-central-1.keboola.com',
-    'us-east-1': 'https://connection.keboola.com'
+    'us-east-1': 'https://connection.keboola.com',
+    'custom': 'https://connection.{REGION}.keboola.com'
 }
 
 SYRUP_URL = {
     'eu-central-1': 'https://syrup.eu-central-1.keboola.com',
-    'us-east-1': 'https://syrup.keboola.com'
+    'us-east-1': 'https://syrup.keboola.com',
+    'custom': 'https://syrup.{REGION}.keboola.com'
 }
 
 ApiResponse = List[Dict]
@@ -24,15 +26,19 @@ class StorageClient(HttpClientBase):
 
     def __init__(self, region: str, token: str, project: str, soft: bool = False) -> None:
 
-        if region not in BASE_URL.keys():
-            logging.exception(f"Unsupported region {region}.")
-            sys.exit(1)
-
         defHeaders = {
             'x-storageapi-token': token
         }
 
-        super().__init__(base_url=urljoin(BASE_URL[region], 'v2/storage/'), default_http_header=defHeaders)
+        if region not in BASE_URL.keys():
+            url = BASE_URL['custom'].format(REGION=region)
+        else:
+            url = BASE_URL[region]
+
+        url = urljoin(url, 'v2/storage/')
+        logging.debug(f"Storage URL: {url}.")
+
+        super().__init__(base_url=url, default_http_header=defHeaders)
         self.paramToken = token
         self.paramRegion = region
         self.paramProject = project
@@ -197,7 +203,12 @@ class SyrupClient(HttpClientBase):
             'x-storageapi-token': token
         }
 
-        super().__init__(base_url=SYRUP_URL[region], default_http_header=defHeaders)
+        if region not in SYRUP_URL.keys():
+            url = SYRUP_URL['custom'].format(REGION=region)
+        else:
+            url = SYRUP_URL[region]
+
+        super().__init__(base_url=url, default_http_header=defHeaders)
         self.paramRegion = region
         self.paramProject = project
 
@@ -255,16 +266,17 @@ class ManagementClient(HttpClientBase):
 
     def __init__(self, region: str, token: str, organization: str):
 
-        if region not in BASE_URL.keys():
-            logging.exception(f"Unsupported region {region}.")
-            sys.exit(1)
-
         defHeaders = {
             'x-kbc-manageapitoken': token,
             'accept': 'application/json'
         }
 
-        super().__init__(base_url=urljoin(BASE_URL[region], 'manage/'), default_http_header=defHeaders)
+        if region not in BASE_URL.keys():
+            url = BASE_URL['custom'].format(REGION=region)
+        else:
+            url = BASE_URL[region]
+
+        super().__init__(base_url=urljoin(url, 'manage/'), default_http_header=defHeaders)
         self.paramToken = token
         self.paramRegion = region
         self.paramOrganization = organization

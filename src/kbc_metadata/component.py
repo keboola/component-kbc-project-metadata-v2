@@ -8,7 +8,7 @@ from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 from typing import Dict, List
 
-APP_VERSION = '1.0.1'
+APP_VERSION = '1.0.2'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -16,6 +16,7 @@ KEY_TOKENS = 'tokens'
 KEY_MASTERTOKEN = 'master_token'
 KEY_DATASETS = 'datasets'
 KEY_INCREMENTAL = 'incremental_load'
+KEY_STACK_IDENTIFIER = 'custom_stack_identifier'
 
 MANDATORY_PARAMS = [[KEY_TOKENS, KEY_MASTERTOKEN], KEY_DATASETS]
 
@@ -56,6 +57,13 @@ class MetadataComponent(KBCEnvHandler):
         self.paramMasterToken = self.cfg_params.get(KEY_MASTERTOKEN, [])
         self.paramDatasets = self.cfg_params[KEY_DATASETS]
         self.paramIncremental = bool(self.cfg_params.get(KEY_INCREMENTAL, False))
+
+        if (_custom_stack := self.cfg_params.get(KEY_STACK_IDENTIFIER, None)) is None:
+            self.paramCustomStack = None
+        elif _custom_stack.strip() == '':
+            self.paramCustomStack = None
+        else:
+            self.paramCustomStack = _custom_stack
 
         self.client = MetadataClient()
         self.paramClient = self.determineToken()
@@ -372,7 +380,11 @@ class MetadataComponent(KBCEnvHandler):
     def run(self):
 
         if self.paramClient == 'management':
-            self.client.initManagement(self.paramMasterToken[0]['region'], self.paramMasterToken[0]['#token'],
+
+            _management_region = self.paramMasterToken[0]['region'] if self.paramCustomStack is None \
+                else self.paramCustomStack
+
+            self.client.initManagement(_management_region, self.paramMasterToken[0]['#token'],
                                        self.paramMasterToken[0]['org_id'])
 
             all_projects = self.client.management.getOrganization()['projects']
@@ -387,7 +399,7 @@ class MetadataComponent(KBCEnvHandler):
             if self.paramDatasets.get(KEY_GET_PROJECT_USERS) is True:
 
                 for project in all_projects:
-                    p_dict = {'project_id': project['id'], 'region': self.paramMasterToken[0]['region']}
+                    p_dict = {'project_id': project['id'], 'region': _management_region}
                     users = self.client.management.getProjectUsers(project['id'])
                     self.writer.project_users.writerows(users, parentDict=p_dict)
 
@@ -398,7 +410,7 @@ class MetadataComponent(KBCEnvHandler):
 
                     prj_id = str(prj['id'])
                     prj_name = prj['name']
-                    prj_region = prj['region']
+                    prj_region = prj['region'] if self.paramCustomStack is None else self.paramCustomStack
                     prj_token_description = prj_name + TOKEN_SUFFIX
                     prj_token_key = '|'.join([prj_region.replace('-', '_'), prj_id])
 
@@ -442,7 +454,7 @@ class MetadataComponent(KBCEnvHandler):
 
                 i += 1
                 prj_token = prj['#key']
-                prj_region = prj['region']
+                prj_region = prj['region'] if self.paramCustomStack is None else self.paramCustomStack
                 prj_id = prj_token.split('-')[0]
 
                 if prj_token == '':

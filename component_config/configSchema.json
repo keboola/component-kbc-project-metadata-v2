@@ -8,8 +8,16 @@
         "incremental_load"
     ],
     "properties": {
+        "custom_stack": {
+            "type": "string",
+            "title": "Custom Stack Identifier",
+            "description": "If specified, all regions specified below and component will try to download data from the custom stack, identified by the region specified here.",
+            "default": "",
+            "propertyOrder": 10
+        },
         "tokens": {
             "type": "array",
+            "propertyOrder": 200,
             "title": "Storage Tokens",
             "description": "A list of Storage tokens from projects for which the metadata will be downloaded. <a href=\"https://help.keboola.com/management/project/tokens/\">Follow our guide</a> to create or manage storage tokens.",
             "items": {
@@ -94,6 +102,7 @@
         },
         "datasets": {
             "type": "object",
+            "propertyOrder": 300,
             "required": [
                 "get_tokens",
                 "get_tokens_last_events",
@@ -189,6 +198,7 @@
             }
         },
         "incremental_load": {
+            "propertyOrder": 400,
             "type": "number",
             "enum": [
                 1,
