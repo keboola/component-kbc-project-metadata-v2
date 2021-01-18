@@ -69,10 +69,14 @@ JSON_CONFIGURATIONS = []
 
 FIELDS_TABLES = ['id', 'region', 'project_id', 'name', 'primaryKey', 'created', 'lastImportDate', 'lastChangeDate',
                  'rowsCount', 'dataSizeBytes', 'isAlias', 'isAliasable', 'bucket_id', 'bucket_name', 'bucket_stage',
-                 'bucket_created', 'bucket_lastChangeDate', 'bucket_isReadOnly']
+                 'bucket_created', 'bucket_lastChangeDate', 'bucket_isReadOnly', 'bucket_sharing',
+                 'bucket_sharedBy_id', 'bucket_sharedBy_name', 'bucket_sharedBy_date', 'sourceTable_id',
+                 'sourceTable_project_id']
 FIELDS_R_TABLES = ['id', 'region', 'project_id', 'name', 'primary_key', 'created', 'last_import_date',
                    'last_change_date', 'rows_count', 'data_size_bytes', 'is_alias', 'is_aliasable', 'bucket_id',
-                   'bucket_name', 'bucket_stage', 'bucket_created', 'bucket_last_change_date', 'bucket_is_read_only']
+                   'bucket_name', 'bucket_stage', 'bucket_created', 'bucket_last_change_date', 'bucket_is_read_only',
+                   'sharing', 'shared_by_id', 'shared_by_name', 'shared_by_date', 'source_table_id',
+                   'source_table_project_id']
 PK_TABLES = ['id', 'region', 'project_id']
 JSON_TABLES = []
 

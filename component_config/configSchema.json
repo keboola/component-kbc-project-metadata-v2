@@ -8,13 +8,6 @@
         "incremental_load"
     ],
     "properties": {
-        "custom_stack": {
-            "type": "string",
-            "title": "Custom Stack Identifier",
-            "description": "If specified, all regions specified below and component will try to download data from the custom stack, identified by the region specified here.",
-            "default": "",
-            "propertyOrder": 10
-        },
         "tokens": {
             "type": "array",
             "propertyOrder": 200,
