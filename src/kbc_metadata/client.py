@@ -1,8 +1,9 @@
 import logging
-import requests
 import sys
 from typing import Dict, List
 from urllib.parse import urljoin
+
+import requests
 from kbc.client_base import HttpClientBase
 
 DEFAULT_TOKEN_EXPIRATION = 26 * 60 * 60  # Default token expiration set to 26 hours
@@ -10,13 +11,15 @@ DEFAULT_TOKEN_EXPIRATION = 26 * 60 * 60  # Default token expiration set to 26 ho
 BASE_URL = {
     'eu-central-1': 'https://connection.eu-central-1.keboola.com',
     'us-east-1': 'https://connection.keboola.com',
-    'custom': 'https://connection.{REGION}.keboola.com'
+    'custom': 'https://connection.{REGION}.keboola.com',
+    'current': 'https://connection.{REGION}'
 }
 
 SYRUP_URL = {
     'eu-central-1': 'https://syrup.eu-central-1.keboola.com',
     'us-east-1': 'https://syrup.keboola.com',
-    'custom': 'https://syrup.{REGION}.keboola.com'
+    'custom': 'https://syrup.{REGION}.keboola.com',
+    'current': 'https://syrup.{REGION}'
 }
 
 ApiResponse = List[Dict]
@@ -30,7 +33,10 @@ class StorageClient(HttpClientBase):
             'x-storageapi-token': token
         }
 
-        if region not in BASE_URL.keys():
+        if region not in BASE_URL.keys() and '.keboola' in region:
+            # assume current
+            url = BASE_URL['current'].format(REGION=region)
+        elif region not in BASE_URL.keys():
             url = BASE_URL['custom'].format(REGION=region)
         else:
             url = BASE_URL[region]
@@ -203,7 +209,10 @@ class SyrupClient(HttpClientBase):
             'x-storageapi-token': token
         }
 
-        if region not in SYRUP_URL.keys():
+        if region not in SYRUP_URL.keys() and '.keboola' in region:
+            # assume current
+            url = SYRUP_URL['current'].format(REGION=region)
+        elif region not in SYRUP_URL.keys():
             url = SYRUP_URL['custom'].format(REGION=region)
         else:
             url = SYRUP_URL[region]
@@ -271,7 +280,10 @@ class ManagementClient(HttpClientBase):
             'accept': 'application/json'
         }
 
-        if region not in BASE_URL.keys():
+        if region not in BASE_URL.keys() and '.keboola' in region:
+            # assume current
+            url = BASE_URL['current'].format(REGION=region)
+        elif region not in BASE_URL.keys():
             url = BASE_URL['custom'].format(REGION=region)
         else:
             url = BASE_URL[region]
@@ -382,18 +394,15 @@ class ManagementClient(HttpClientBase):
 class MetadataClient:
 
     def __init__(self):
-
         self.management = None
         self.syrup = None
         self.storage = None
 
     def initStorageAndSyrup(self, region, token, project):
-
         self.storage = StorageClient(region, token, project)
         self.syrup = SyrupClient(region, token, project)
 
     def initManagement(self, region, token, organization):
-
         self.management = ManagementClient(region, token, organization)
 
 
