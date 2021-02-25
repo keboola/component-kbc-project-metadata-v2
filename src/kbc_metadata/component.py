@@ -481,4 +481,4 @@ class MetadataComponent(KBCEnvHandler):
         self.write_state_file(self.newTokens)
 
     def _get_current_region(self):
-        return self.environment_variables.stack_id.replace('connection.', '').replace('.keboola.com', '')
+        return self.environment_variables.stack_id.replace('connection.', '')
