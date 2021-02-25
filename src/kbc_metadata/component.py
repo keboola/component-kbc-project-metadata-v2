@@ -1,12 +1,16 @@
-import dateutil
 import logging
 import sys
 import time
 from hashlib import md5
+from typing import Dict, List
+
+import dateutil
 from kbc.env_handler import KBCEnvHandler
+
 from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
-from typing import Dict, List
+
+KEY_CURRENT = 'current'
 
 APP_VERSION = '1.0.3'
 TOKEN_SUFFIX = '_Telemetry_token'
@@ -44,8 +48,7 @@ class ComponentWriters:
 class MetadataComponent(KBCEnvHandler):
 
     def __init__(self):
-
-        super().__init__(mandatory_params=MANDATORY_PARAMS, log_level='INFO')
+        KBCEnvHandler.__init__(self, MANDATORY_PARAMS, log_level=logging.INFO)
         self.validate_config(MANDATORY_PARAMS)
         logging.info(f"Running component version {APP_VERSION}...")
 
@@ -200,6 +203,11 @@ class MetadataComponent(KBCEnvHandler):
             self.writer.triggers_tables = MetadataWriter(self.tables_out_path, 'triggers-tables', self.paramIncremental)
 
     def getDataForProject(self, prjId, prjToken, prjRegion):
+        # get current stack
+        if prjRegion == KEY_CURRENT:
+            if not self.environment_variables.stack_id:
+                raise ValueError("Can't use CURRENT option, the stack is not available in environment")
+            prjRegion = self._get_current_region()
 
         self.client.initStorageAndSyrup(prjRegion, prjToken, prjId)
         p_dict = {'region': prjRegion, 'project_id': prjId}
@@ -384,6 +392,12 @@ class MetadataComponent(KBCEnvHandler):
             _management_region = self.paramMasterToken[0]['region'] if self.paramCustomStack is None \
                 else self.paramCustomStack
 
+            # get current stack
+            if _management_region == KEY_CURRENT:
+                if not self.environment_variables.stack_id:
+                    raise ValueError("Can't use CURRENT option, the stack is not available in environment")
+                _management_region = self._get_current_region()
+
             self.client.initManagement(_management_region, self.paramMasterToken[0]['#token'],
                                        self.paramMasterToken[0]['org_id'])
 
@@ -465,3 +479,6 @@ class MetadataComponent(KBCEnvHandler):
                 self.getDataForProject(prj_id, prj_token, prj_region)
 
         self.write_state_file(self.newTokens)
+
+    def _get_current_region(self):
+        return self.environment_variables.stack_id.replace('connection.', '').replace('.keboola.com', '')
