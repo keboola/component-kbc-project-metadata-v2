@@ -31,12 +31,14 @@
                     "region": {
                         "enum": [
                             "eu-central-1",
-                            "us-east-1"
+                            "us-east-1",
+                            "current"
                         ],
                         "options": {
                             "enum_titles": [
                                 "EU",
-                                "US"
+                                "US",
+                                "CURRENT_STACK"
                             ]
                         },
                         "type": "string",
