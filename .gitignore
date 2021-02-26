@@ -9,3 +9,6 @@ settings.json
 
 # kbc datafolder
 data/
+
+# Testing notebook
+src/test.ipynb
