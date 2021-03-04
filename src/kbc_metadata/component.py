@@ -12,7 +12,7 @@ from kbc_metadata.result import MetadataWriter
 
 KEY_CURRENT = 'current'
 
-APP_VERSION = '1.0.3'
+APP_VERSION = '1.1.2'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -297,6 +297,8 @@ class MetadataComponent(KBCEnvHandler):
 
                 _trans = []
                 for transformation in bucket['rows']:
+                    if transformation['configuration'].get('backend') == 'mysql':
+                        continue
                     transformation['configuration']['packages'] = ','.join(
                         transformation['configuration'].get('packages', []))
                     transformation['configuration']['requires'] = ','.join(

@@ -12,14 +12,18 @@ BASE_URL = {
     'eu-central-1': 'https://connection.eu-central-1.keboola.com',
     'us-east-1': 'https://connection.keboola.com',
     'custom': 'https://connection.{REGION}.keboola.com',
-    'current': 'https://connection.{REGION}'
+    'current': 'https://connection.{REGION}',
+    'keboola.com': 'https://connection.keboola.com',
+    'eu-central-1.keboola.com': 'https://connection.eu-central-1.keboola.com'
 }
 
 SYRUP_URL = {
     'eu-central-1': 'https://syrup.eu-central-1.keboola.com',
     'us-east-1': 'https://syrup.keboola.com',
     'custom': 'https://syrup.{REGION}.keboola.com',
-    'current': 'https://syrup.{REGION}'
+    'current': 'https://syrup.{REGION}',
+    'keboola.com': 'https://syrup.keboola.com',
+    'eu-central-1.keboola.com': 'https://syrup.eu-central-1.keboola.com'
 }
 
 ApiResponse = List[Dict]
