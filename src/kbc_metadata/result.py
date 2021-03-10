@@ -58,14 +58,15 @@ JSON_TOKENS_LAST_EVENTS = []
 FIELDS_CONFIGURATIONS = ['id', 'region', 'project_id', 'name', 'created', 'creatorToken_id', 'creatorToken_description',
                          'component_id', 'component_name', 'component_type',
                          'version', 'isDeleted', 'currentVersion_created', 'currentVersion_creatorToken_id',
-                         'currentVersion_creatorToken_description', 'currentVersion_changeDescription', 'description']
+                         'currentVersion_creatorToken_description', 'currentVersion_changeDescription', 'description',
+                         'configuration']
 FIELDS_R_CONFIGURATIONS = ['id', 'region', 'project_id', 'name', 'created', 'creator_token_id',
                            'creator_token_description', 'component_id', 'component_name', 'component_type',
-                           'version', 'is_deleted', 'current_version_created', 'current_version_creator_token_id',
-                           'current_version_creator_token_description', 'current_version_change_description',
-                           'description']
+                           'version', 'is_deleted', 'current_version_created',
+                           'current_version_creator_token_id', 'current_version_creator_token_description',
+                           'current_version_change_description', 'description', 'configuration']
 PK_CONFIGURATIONS = ['id', 'region']
-JSON_CONFIGURATIONS = []
+JSON_CONFIGURATIONS = ['configuration']
 
 FIELDS_TABLES = ['id', 'region', 'project_id', 'name', 'primaryKey', 'created', 'lastImportDate', 'lastChangeDate',
                  'rowsCount', 'dataSizeBytes', 'isAlias', 'isAliasable', 'bucket_id', 'bucket_name', 'bucket_stage',
@@ -214,11 +215,12 @@ class MetadataWriter:
 
         for row in listToWrite:
 
-            row_f = self.flatten_json(x=row)
+            save_aside = {}
+            for field in self.paramJsonFields:
+                save_aside[field] = json.dumps(row[field])
+                del row[field]
 
-            if self.paramJsonFields != []:
-                for field in self.paramJsonFields:
-                    row_f[field] = json.dumps(row[field])
+            row_f = {**self.flatten_json(x=row), **save_aside}
 
             _dictToWrite = {}
 

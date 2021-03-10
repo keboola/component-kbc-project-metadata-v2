@@ -12,7 +12,7 @@ from kbc_metadata.result import MetadataWriter
 
 KEY_CURRENT = 'current'
 
-APP_VERSION = '1.1.2'
+APP_VERSION = '1.1.3'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
