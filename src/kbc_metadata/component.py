@@ -10,9 +10,11 @@ from kbc.env_handler import KBCEnvHandler
 from kbc_metadata.client import MetadataClient, StorageClient
 from kbc_metadata.result import MetadataWriter
 
+from keboola.component.interface import init_environment_variables
+
 KEY_CURRENT = 'current'
 
-APP_VERSION = '1.1.3'
+APP_VERSION = '1.1.4'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -55,6 +57,8 @@ class MetadataComponent(KBCEnvHandler):
         if self.cfg_params.get('debug', False) is True:
             logger = logging.getLogger()
             logger.setLevel(level='DEBUG')
+
+        self.environment_variables = init_environment_variables()
 
         self.paramTokens = self.cfg_params.get(KEY_TOKENS, [])
         self.paramMasterToken = self.cfg_params.get(KEY_MASTERTOKEN, [])
@@ -426,7 +430,7 @@ class MetadataComponent(KBCEnvHandler):
 
                     prj_id = str(prj['id'])
                     prj_name = prj['name']
-                    prj_region = prj['region'] if self.paramCustomStack is None else self.paramCustomStack
+                    prj_region = _management_region
                     prj_token_description = prj_name + TOKEN_SUFFIX
                     prj_token_key = '|'.join([prj_region.replace('-', '_'), prj_id])
 
