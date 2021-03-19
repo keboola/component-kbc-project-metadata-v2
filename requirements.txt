@@ -1,4 +1,4 @@
 https://bitbucket.org/kds_consulting_team/keboola-python-util-lib/get/0.5.2.zip#egg=kbc
 mock
 freezegun
-keboola.utils
+keboola.component
