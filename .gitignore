@@ -12,3 +12,6 @@ data/
 
 # Testing notebook
 src/test.ipynb
+
+# PyEnv
+.python-version

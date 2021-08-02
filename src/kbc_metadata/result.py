@@ -174,6 +174,15 @@ FIELDS_R_TRIGGERS_TABLES = ['trigger_id', 'region', 'project_id', 'table_id']
 PK_TRIGGERS_TABLES = ['trigger_id', 'region', 'project_id']
 JSON_TRIGGERS_TABLES = []
 
+FIELDS_WORKSPACE_TABLE_LOADS = ['id', 'region', 'project_id', 'event', 'component', 'message', 'runId', 'created',
+                                'configurationId', 'objectId', 'objectName', 'objectType', 'context', 'params',
+                                'results', 'performance', 'token_id', 'token_name', 'uri']
+FIELDS_R_WORKSPACE_TABLE_LOADS = ['id', 'region', 'project_id', 'event', 'component', 'message', 'run_id', 'created',
+                                  'configuration_id', 'object_id', 'object_name', 'object_type', 'context', 'params',
+                                  'results', 'performance', 'token_id', 'token_name', 'uri']
+PK_WORKSPACE_TABLE_LOADS = ['id', 'region', 'project_id']
+JSON_WORKSPACE_TABLE_LOADS = ['context', 'params', 'results', 'performance']
+
 
 class MetadataWriter:
 

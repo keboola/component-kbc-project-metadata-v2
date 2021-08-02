@@ -31,6 +31,8 @@ ApiResponse = List[Dict]
 
 class StorageClient(HttpClientBase):
 
+    LIMIT = 100
+
     def __init__(self, region: str, token: str, project: str, soft: bool = False) -> None:
 
         defHeaders = {
@@ -205,8 +207,48 @@ class StorageClient(HttpClientBase):
                           f"in region {self.paramRegion}.")
             return []
 
+    def getWorkspaceLoadEvents(self, **kwargs):
+
+        kwargs['component'] = 'storage'
+        kwargs['q'] = 'event:storage.workspaceLoaded'
+
+        return self.getStorageEvents(**kwargs)
+
+    def getStorageEvents(self, **kwargs) -> ApiResponse:
+
+        urlEvents = urljoin(self.base_url, 'events')
+        paramsEvents = kwargs
+        paramsEvents['limit'] = self.LIMIT
+
+        offset = 0
+        is_complete = False
+        all_events = []
+
+        while is_complete is False:
+            paramsEvents['offset'] = offset
+
+            rspEvents = self.get_raw(url=urlEvents, params=paramsEvents)
+            scEvents, jsEvents = Utils.responseSplitter(rspEvents)
+
+            if scEvents == 200:
+                all_events += jsEvents
+
+                if len(jsEvents) < self.LIMIT:
+                    is_complete = True
+                    return all_events
+                else:
+                    offset += self.LIMIT
+
+            else:
+                logging.error(f"Could not obtain storage events for project {self.paramProject} "
+                              f"in region {self.paramRegion}.")
+                logging.exception(f"Received: {scEvents} - {jsEvents}.")
+                sys.exit(1)
+
 
 class SyrupClient(HttpClientBase):
+
+    LIMIT = 1000
 
     def __init__(self, region: str, token: str, project: str) -> None:
 
@@ -243,6 +285,52 @@ class SyrupClient(HttpClientBase):
             logging.error(f"Could not obtain jobs for project {self.paramProject} in region {self.paramRegion}.")
             logging.exception(f"Received: {scJobs} - {jsJobs}.")
             sys.exit(1)
+
+    def getTransformationJobs(self, last_job_id: str = None, **kwargs) -> ApiResponse:
+
+        q = '(component:transformation OR params.component:transformation)'
+        # ' AND -(status:processing OR status:waiting OR status:terminating)'
+
+        if last_job_id is not None:
+            q += f' AND id:>{last_job_id}'
+            logging.info(f"Downloading transformations jobs since last job id {last_job_id}.")
+        else:
+            q += ' AND createdTime:>now-7d'
+            logging.info("Downloading transformations jobs created in the last 7 days.")
+
+        kwargs['q'] = q
+
+        return self._getPagedJobs(**kwargs)
+
+    def _getPagedJobs(self, **kwargs) -> ApiResponse:
+
+        urlJobs = urljoin(self.base_url, 'queue/jobs')
+        paramsJobs = kwargs
+        paramsJobs['limit'] = self.LIMIT
+
+        offset = 0
+        is_complete = False
+        all_jobs = []
+
+        while is_complete is False:
+            paramsJobs['offset'] = offset
+
+            rspJobs = self.get_raw(url=urlJobs, params=paramsJobs)
+            scJobs, jsJobs = Utils.responseSplitter(rspJobs)
+
+            if scJobs == 200:
+                all_jobs += jsJobs
+
+                if len(jsJobs) < self.LIMIT:
+                    is_complete = True
+                    return all_jobs
+                else:
+                    offset += self.LIMIT
+
+            else:
+                logging.error(f"Could not obtain jobs for project {self.paramProject} in region {self.paramRegion}.")
+                logging.exception(f"Received: {scJobs} - {jsJobs}.")
+                sys.exit(1)
 
     def getOrchestrations(self) -> ApiResponse:
 

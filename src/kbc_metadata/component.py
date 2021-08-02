@@ -14,7 +14,7 @@ from keboola.component.interface import init_environment_variables
 
 KEY_CURRENT = 'current'
 
-APP_VERSION = '1.1.5'
+APP_VERSION = '1.2.0'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -37,9 +37,10 @@ KEY_GET_PROJECT_USERS = 'get_project_users'
 KEY_GET_ORGANIZATION_USERS = 'get_organization_users'
 KEY_GET_TRIGGERS = 'get_triggers'
 KEY_GET_COLUMNS = 'get_columns'
+KEY_GET_WORKSPACE_LOAD_EVENTS = 'get_workspace_load_events'
 
 STORAGE_ENDPOINTS = [KEY_GET_ALL_CONFIGURATIONS, KEY_GET_TOKENS, KEY_GET_ORCHESTRATIONS, KEY_GET_WAITING_JOBS,
-                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS]
+                     KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS, KEY_GET_WORKSPACE_LOAD_EVENTS]
 MANAGEMENT_ENDPOINTS = [KEY_GET_PROJECT_USERS, KEY_GET_ORGANIZATION_USERS]
 
 
@@ -77,8 +78,15 @@ class MetadataComponent(KBCEnvHandler):
         self.checkTokenPermissions()
         self.createWriters()
 
-        self.previousTokens = {} if self.get_state_file() is None else self.get_state_file()
+        state = self.get_state_file()
+        if state is None:
+            state = {}
+
+        self.previousTokens = state.get('tokens', {})
         self.newTokens = {}
+
+        self.lastProcessedTransformations = state.get('tr_last_processed_id', {})
+        self.newProcessedTransformations = {}
 
         logging.debug(f"Using {self.paramClient} token.")
 
@@ -171,7 +179,8 @@ class MetadataComponent(KBCEnvHandler):
 
         if self.paramDatasets.get(KEY_GET_TABLES) is True:
             self.writer.tables = MetadataWriter(self.tables_out_path, 'tables', self.paramIncremental)
-            self.writer.tables_metadata = MetadataWriter(self.tables_out_path, 'tables-metadata', self.paramIncremental)
+            self.writer.tables_metadata = MetadataWriter(
+                self.tables_out_path, 'tables-metadata', self.paramIncremental)
 
             if self.paramDatasets.get(KEY_GET_COLUMNS) is True:
                 self.writer.columns = MetadataWriter(self.tables_out_path, 'tables-columns', self.paramIncremental)
@@ -179,7 +188,8 @@ class MetadataComponent(KBCEnvHandler):
                                                               self.paramIncremental)
 
         if self.paramDatasets.get(KEY_GET_TRANSFORMATIONS) is True:
-            self.writer.transformations = MetadataWriter(self.tables_out_path, 'transformations', self.paramIncremental)
+            self.writer.transformations = MetadataWriter(
+                self.tables_out_path, 'transformations', self.paramIncremental)
             self.writer.transformations_buckets = MetadataWriter(self.tables_out_path, 'transformations-buckets',
                                                                  self.paramIncremental)
             self.writer.transformations_inputs = MetadataWriter(self.tables_out_path, 'transformations-inputs',
@@ -204,9 +214,14 @@ class MetadataComponent(KBCEnvHandler):
 
         if self.paramDatasets.get(KEY_GET_TRIGGERS) is True:
             self.writer.triggers = MetadataWriter(self.tables_out_path, 'triggers', self.paramIncremental)
-            self.writer.triggers_tables = MetadataWriter(self.tables_out_path, 'triggers-tables', self.paramIncremental)
+            self.writer.triggers_tables = MetadataWriter(
+                self.tables_out_path, 'triggers-tables', self.paramIncremental)
 
-    def getDataForProject(self, prjId, prjToken, prjRegion):
+        if self.paramDatasets.get(KEY_GET_WORKSPACE_LOAD_EVENTS) is True:
+            self.writer.ws_load_events = MetadataWriter(self.tables_out_path, 'workspace-table-loads',
+                                                        self.paramIncremental)
+
+    def getDataForProject(self, prjId, prjToken, prjRegion, prjKey):
         # get current stack
         if prjRegion == KEY_CURRENT:
             if not self.environment_variables.stack_id:
@@ -358,6 +373,27 @@ class MetadataComponent(KBCEnvHandler):
                 _trigger_parent = {**{'trigger_id': trigger['id']}, **p_dict}
                 self.writer.triggers_tables.writerows(trigger.get('tables', []), parentDict=_trigger_parent)
 
+        if self.paramDatasets.get(KEY_GET_WORKSPACE_LOAD_EVENTS) is True:
+            last_processed_job_id = self.lastProcessedTransformations.get(prjKey)
+            transformation_jobs = self.client.syrup.getTransformationJobs(last_job_id=last_processed_job_id)
+
+            transformation_jobs.reverse()
+
+            encountered_processing = False
+
+            for job in transformation_jobs:
+                if job['status'] in ('processing', 'waiting', 'terminating'):
+                    encountered_processing = True
+
+                if encountered_processing is False:
+                    last_processed_job_id = job['id']
+
+                run_id = job['runId']
+                storage_events = self.client.storage.getWorkspaceLoadEvents(runId=run_id)
+                self.writer.ws_load_events.writerows(storage_events, parentDict=p_dict)
+
+            self.newProcessedTransformations[prjKey] = int(last_processed_job_id)
+
     @staticmethod
     def convertIsoFormatToTimestamp(isoDTString: str) -> int:
 
@@ -447,7 +483,8 @@ class MetadataComponent(KBCEnvHandler):
                         }
 
                     else:
-                        valid = self.isTokenValid(prj_token_old['#token'], prj_token_old['expires'], prj_region, prj_id)
+                        valid = self.isTokenValid(prj_token_old['#token'],
+                                                  prj_token_old['expires'], prj_region, prj_id)
 
                         if valid is True:
                             logging.debug(f"Using token {prj_token_old['id']} from state for project {prj_id}.")
@@ -464,7 +501,7 @@ class MetadataComponent(KBCEnvHandler):
                             }
 
                     logging.info(f"Downloading data for project {prj_name} in region {prj_region}.")
-                    self.getDataForProject(prj_id, prj_token['#token'], prj_region)
+                    self.getDataForProject(prj_id, prj_token['#token'], prj_region, prj_token_key)
                     self.newTokens[prj_token_key] = prj_token
 
         elif self.paramClient == 'storage':
@@ -476,15 +513,21 @@ class MetadataComponent(KBCEnvHandler):
                 prj_token = prj['#key']
                 prj_region = prj['region'] if self.paramCustomStack is None else self.paramCustomStack
                 prj_id = prj_token.split('-')[0]
+                prj_token_key = '|'.join([prj_region.replace('-', '_'), prj_id])
 
                 if prj_token == '':
                     logging.error(f"Token at position {i} is empty.")
                     sys.exit(1)
 
                 logging.info(f"Downloading data for project {prj_id} in region {prj_region}.")
-                self.getDataForProject(prj_id, prj_token, prj_region)
+                self.getDataForProject(prj_id, prj_token, prj_region, prj_token_key)
 
-        self.write_state_file(self.newTokens)
+        new_state = {
+            'tokens': self.newTokens,
+            'tr_last_processed_id': self.newProcessedTransformations
+        }
+
+        self.write_state_file(new_state)
 
     def _get_current_region(self):
         return self.environment_variables.stack_id.replace('connection.', '')
