@@ -14,7 +14,7 @@ from keboola.component.interface import init_environment_variables
 
 KEY_CURRENT = 'current'
 
-APP_VERSION = '1.2.1'
+APP_VERSION = '1.2.2'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -83,9 +83,13 @@ class MetadataComponent(KBCEnvHandler):
             state = {}
 
         self.previousTokens = state.get('tokens', {})
+        if isinstance(self.previousTokens, list):
+            self.previousTokens = {}
         self.newTokens = {}
 
         self.lastProcessedTransformations = state.get('tr_last_processed_id', {})
+        if isinstance(self.lastProcessedTransformations, list):
+            self.lastProcessedTransformations = {}
         self.newProcessedTransformations = {}
 
         logging.debug(f"Using {self.paramClient} token.")
