@@ -14,7 +14,7 @@ from keboola.component.interface import init_environment_variables
 
 KEY_CURRENT = 'current'
 
-APP_VERSION = '1.2.0'
+APP_VERSION = '1.2.1'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -392,7 +392,7 @@ class MetadataComponent(KBCEnvHandler):
                 storage_events = self.client.storage.getWorkspaceLoadEvents(runId=run_id)
                 self.writer.ws_load_events.writerows(storage_events, parentDict=p_dict)
 
-            self.newProcessedTransformations[prjKey] = int(last_processed_job_id)
+            self.newProcessedTransformations[prjKey] = last_processed_job_id
 
     @staticmethod
     def convertIsoFormatToTimestamp(isoDTString: str) -> int:
