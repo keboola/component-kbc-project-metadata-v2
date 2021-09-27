@@ -14,7 +14,7 @@ from keboola.component.interface import init_environment_variables
 
 KEY_CURRENT = 'current'
 
-APP_VERSION = '1.2.2'
+APP_VERSION = '1.3.0'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 

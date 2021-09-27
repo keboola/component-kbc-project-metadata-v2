@@ -59,14 +59,14 @@ FIELDS_CONFIGURATIONS = ['id', 'region', 'project_id', 'name', 'created', 'creat
                          'component_id', 'component_name', 'component_type',
                          'version', 'isDeleted', 'currentVersion_created', 'currentVersion_creatorToken_id',
                          'currentVersion_creatorToken_description', 'currentVersion_changeDescription', 'description',
-                         'configuration']
+                         'configuration', 'rows']
 FIELDS_R_CONFIGURATIONS = ['id', 'region', 'project_id', 'name', 'created', 'creator_token_id',
                            'creator_token_description', 'component_id', 'component_name', 'component_type',
                            'version', 'is_deleted', 'current_version_created',
                            'current_version_creator_token_id', 'current_version_creator_token_description',
-                           'current_version_change_description', 'description', 'configuration']
+                           'current_version_change_description', 'description', 'configuration', 'rows']
 PK_CONFIGURATIONS = ['id', 'region']
-JSON_CONFIGURATIONS = ['configuration']
+JSON_CONFIGURATIONS = ['configuration', 'rows']
 
 FIELDS_TABLES = ['id', 'region', 'project_id', 'name', 'primaryKey', 'created', 'lastImportDate', 'lastChangeDate',
                  'rowsCount', 'dataSizeBytes', 'isAlias', 'isAliasable', 'bucket_id', 'bucket_name', 'bucket_stage',

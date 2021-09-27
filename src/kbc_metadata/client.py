@@ -130,7 +130,7 @@ class StorageClient(HttpClientBase):
     def getAllConfigurations(self) -> ApiResponse:
 
         urlConfigs = urljoin(self.base_url, 'components')
-        parConfigs = {'include': 'configuration'}
+        parConfigs = {'include': 'configuration,rows'}
 
         rspConfigs = self.get_raw(urlConfigs, params=parConfigs)
         scConfigs, jsConfigs = Utils.responseSplitter(rspConfigs)
