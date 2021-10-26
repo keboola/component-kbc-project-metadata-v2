@@ -220,31 +220,35 @@ class MetadataWriter:
         self.writer = csv.DictWriter(open(self.paramTablePath, 'w'), fieldnames=self.paramFields,
                                      restval='', extrasaction='ignore', quotechar='\"', quoting=csv.QUOTE_ALL)
 
+    def writerow(self, row, parentDict=None):
+
+        save_aside = {}
+        for field in self.paramJsonFields:
+            save_aside[field] = json.dumps(row[field])
+            del row[field]
+
+        row_f = {**self.flatten_json(x=row), **save_aside}
+
+        _dictToWrite = {}
+
+        for key, value in row_f.items():
+
+            if key in self.paramFields:
+                _dictToWrite[key] = value
+
+            else:
+                continue
+
+        if parentDict is not None:
+            _dictToWrite = {**_dictToWrite, **parentDict}
+
+        self.writer.writerow(_dictToWrite)
+
     def writerows(self, listToWrite, parentDict=None):
 
         for row in listToWrite:
 
-            save_aside = {}
-            for field in self.paramJsonFields:
-                save_aside[field] = json.dumps(row[field])
-                del row[field]
-
-            row_f = {**self.flatten_json(x=row), **save_aside}
-
-            _dictToWrite = {}
-
-            for key, value in row_f.items():
-
-                if key in self.paramFields:
-                    _dictToWrite[key] = value
-
-                else:
-                    continue
-
-            if parentDict is not None:
-                _dictToWrite = {**_dictToWrite, **parentDict}
-
-            self.writer.writerow(_dictToWrite)
+            self.writerow(row, parentDict)
 
     def flatten_json(self, x, out=None, name=''):
         if out is None:

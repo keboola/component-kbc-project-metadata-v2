@@ -14,7 +14,7 @@ from keboola.component.interface import init_environment_variables
 
 KEY_CURRENT = 'current'
 
-APP_VERSION = '1.3.0'
+APP_VERSION = '1.3.1'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
@@ -346,7 +346,10 @@ class MetadataComponent(KBCEnvHandler):
 
                         if transformation['configuration'].get('backend') != 'redshift':
                             for column in table_input.get('datatypes', []):
-                                _metadata += [{**table_input['datatypes'][column],
+                                _dt = table_input['datatypes'][column]
+                                if _dt is None:
+                                    continue
+                                _metadata += [{**_dt,
                                                **{'source': table_input['source'],
                                                   'destination': table_input['destination']}}]
 
