@@ -217,7 +217,7 @@ JSON_TRANSFORMATIONS_V2_OUTPUTS = ['delete_where_values', 'primary_key']
 FIELDS_TRANSFORMATIONS_V2_CODES = ['transformation_id', 'region', 'project_id', 'component_id', 'block_name',
                                    'block_index', 'code_name', 'code_index', 'script', 'script_index']
 FIELDS_R_TRANSFORMATIONS_V2_CODES = FIELDS_TRANSFORMATIONS_V2_CODES
-PK_TRANSFORMATIONS_V2_CODES = ['transformation_id', 'region', 'project_id', 'component_id', 'block_indexx',
+PK_TRANSFORMATIONS_V2_CODES = ['transformation_id', 'region', 'project_id', 'component_id', 'block_index',
                                'code_index', 'script_index']
 JSON_TRANSFORMATIONS_V2_CODES = []
 
