@@ -1,7 +1,3 @@
-import os
-import csv
-import json
-
 FIELDS_ORCHESTRATIONS = ['id', 'region', 'project_id', 'name', 'crontabRecord', 'crontabTimezone', 'createdTime',
                          'lastScheduledTime', 'nextScheduledTime', 'token_id', 'token_description', 'active',
                          'lastExecutedJob_id', 'lastExecutedJob_status', 'lastExecutedJob_createdTime',
@@ -183,81 +179,49 @@ FIELDS_R_WORKSPACE_TABLE_LOADS = ['id', 'region', 'project_id', 'event', 'compon
 PK_WORKSPACE_TABLE_LOADS = ['id', 'region', 'project_id']
 JSON_WORKSPACE_TABLE_LOADS = ['context', 'params', 'results', 'performance']
 
+FIELDS_TRANSFORMATIONS_V2 = ['id', 'region', 'project_id', 'component_id', 'name', 'description', 'version', 'created',
+                             'creatorToken_id', 'creatorToken_description', 'changeDescription', 'packages',
+                             'variables_id', 'variables_values_id', 'currentVersion_created',
+                             'currentVersion_creatorToken_id', 'currentVersion_creatorToken_description']
+FIELDS_R_TRANSFORMATIONS_V2 = ['id', 'region', 'project_id', 'component_id', 'name', 'description', 'version',
+                               'created', 'creator_token_id', 'creator_token_description', 'change_description',
+                               'packages', 'variables_id', 'variables_values_id', 'current_version_created',
+                               'current_version_creator_token_id', 'current_version_creator_token_description']
+PK_TRANSFORMATIONS_V2 = ['id', 'region', 'project_id', 'component_id']
+JSON_TRANSFORMATIONS_V2 = []
 
-class MetadataWriter:
+FIELDS_TRANSFORMATIONS_V2_INPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source',
+                                    'destination', 'where_column', 'where_values', 'where_operator', 'columns',
+                                    'changed_since']
+FIELDS_R_TRANSFORMATIONS_V2_INPUTS = FIELDS_TRANSFORMATIONS_V2_INPUTS
+PK_TRANSFORMATIONS_V2_INPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source', 'destination']
+JSON_TRANSFORMATIONS_V2_INPUTS = ['where_values', 'columns']
 
-    def __init__(self, tableOutPath, tableName, incremental):
+FIELDS_TRANSFORMATIONS_V2_INPUTS_METADATA = ['transformation_id', 'region', 'project_id', 'component_id',
+                                             'table_source', 'table_destination', 'source', 'type', 'length',
+                                             'nullable', 'convert_empty_values_to_null']
+FIELDS_R_TRANSFORMATIONS_V2_INPUTS_METADATA = ['transformation_id', 'region', 'project_id', 'component_id',
+                                               'table_source', 'table_destination', 'column', 'type', 'length',
+                                               'nullable', 'convert_empty_values_to_null']
+PK_TRANSFORMATIONS_V2_INPUTS_METADATA = ['transformation_id', 'region', 'project_id', 'component_id',
+                                         'table_source', 'table_destination', 'column']
+JSON_TRANSFORMATIONS_V2_INPUTS_METADATA = []
 
-        self.paramPath = tableOutPath
-        self.paramTableName = tableName
-        self.paramTable = tableName + '.csv'
-        self.paramTablePath = os.path.join(self.paramPath, self.paramTable)
-        self.paramFields = eval(f'FIELDS_{tableName.upper().replace("-", "_")}')
-        self.paramJsonFields = eval(f'JSON_{tableName.upper().replace("-", "_")}')
-        self.paramPrimaryKey = eval(f'PK_{tableName.upper().replace("-", "_")}')
-        self.paramFieldsRenamed = eval(f'FIELDS_R_{tableName.upper().replace("-", "_")}')
-        self.paramIncremental = incremental
+FIELDS_TRANSFORMATIONS_V2_OUTPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source',
+                                     'destination', 'incremental', 'delete_where_column', 'delete_where_operator',
+                                     'delete_where_values', 'primary_key']
+FIELDS_R_TRANSFORMATIONS_V2_OUTPUTS = FIELDS_TRANSFORMATIONS_V2_INPUTS
+PK_TRANSFORMATIONS_V2_OUTPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source', 'destination']
+JSON_TRANSFORMATIONS_V2_OUTPUTS = ['delete_where_values', 'primary_key']
 
-        self.createManifest()
-        self.createWriter()
+FIELDS_TRANSFORMATIONS_V2_CODES = ['transformation_id', 'region', 'project_id', 'component_id', 'block_name',
+                                   'block_index', 'code_name', 'code_index', 'script', 'script_index']
+FIELDS_R_TRANSFORMATIONS_V2_CODES = FIELDS_TRANSFORMATIONS_V2_CODES
+PK_TRANSFORMATIONS_V2_CODES = ['transformation_id', 'region', 'project_id', 'component_id', 'block_idx',
+                               'code_idx', 'script_idx']
+JSON_TRANSFORMATIONS_V2_CODES = []
 
-    def createManifest(self):
-
-        template = {
-            'incremental': self.paramIncremental,
-            'primary_key': self.paramPrimaryKey,
-            'columns': self.paramFieldsRenamed
-        }
-
-        path = self.paramTablePath + '.manifest'
-
-        with open(path, 'w') as manifest:
-
-            json.dump(template, manifest)
-
-    def createWriter(self):
-
-        self.writer = csv.DictWriter(open(self.paramTablePath, 'w'), fieldnames=self.paramFields,
-                                     restval='', extrasaction='ignore', quotechar='\"', quoting=csv.QUOTE_ALL)
-
-    def writerow(self, row, parentDict=None):
-
-        save_aside = {}
-        for field in self.paramJsonFields:
-            save_aside[field] = json.dumps(row[field])
-            del row[field]
-
-        row_f = {**self.flatten_json(x=row), **save_aside}
-
-        _dictToWrite = {}
-
-        for key, value in row_f.items():
-
-            if key in self.paramFields:
-                _dictToWrite[key] = value
-
-            else:
-                continue
-
-        if parentDict is not None:
-            _dictToWrite = {**_dictToWrite, **parentDict}
-
-        self.writer.writerow(_dictToWrite)
-
-    def writerows(self, listToWrite, parentDict=None):
-
-        for row in listToWrite:
-
-            self.writerow(row, parentDict)
-
-    def flatten_json(self, x, out=None, name=''):
-        if out is None:
-            out = dict()
-
-        if type(x) is dict:
-            for a in x:
-                self.flatten_json(x[a], out, name + a + '_')
-        else:
-            out[name[:-1]] = x
-
-        return out
+FIELDS_TABLES_LOAD_EVENTS = FIELDS_WORKSPACE_TABLE_LOADS
+FIELDS_R_TABLES_LOAD_EVENTS = FIELDS_R_WORKSPACE_TABLE_LOADS
+PK_TABLES_LOAD_EVENTS = PK_WORKSPACE_TABLE_LOADS
+JSON_TABLES_LOAD_EVENTS = JSON_WORKSPACE_TABLE_LOADS
