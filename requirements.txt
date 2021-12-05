@@ -1,4 +1,5 @@
 dataclasses
+dateparser
 mock
 freezegun
 keboola.component==1.3.6
