@@ -78,6 +78,19 @@ class StorageClient(HttpClient):
                           f"{self.parameters.region}.\nReceived: {sc_tokens} - {js_tokens}.")
             sys.exit(1)
 
+    def get_component_configurations(self, component_id: str) -> list:
+
+        rsp_configs = self.get_raw(f'components/{component_id}/configs')
+        sc_configs, js_configs = response_splitter(rsp_configs)
+
+        if sc_configs == 200:
+            return js_configs
+        else:
+            logging.error(f"Could not download configurations of component {component_id} for project "
+                          f"{self.parameters.project} in"
+                          f"stack {self.parameters.region}.\nReceived: {sc_configs} - {js_configs}.")
+            sys.exit(1)
+
     def get_all_configurations(self) -> list:
 
         par_configs = {'include': 'configuration,rows'}
@@ -95,29 +108,11 @@ class StorageClient(HttpClient):
 
     def get_orchestrations(self) -> list:
 
-        rsp_orch = self.get_raw('components/orchestrator/configs')
-        sc_orch, js_orch = response_splitter(rsp_orch)
-
-        if sc_orch == 200:
-            return js_orch
-
-        else:
-            logging.error(f"Could not download orchestrations for project {self.parameters.project} in "
-                          f"stack {self.parameters.region}.\nReceived: {sc_orch} - {js_orch}.")
-            sys.exit(1)
+        return self.get_component_configurations('orchestrator')
 
     def get_transformations_v1(self) -> list:
 
-        rsp_trans = self.get_raw('components/transformation/configs')
-        sc_trans, js_trans = response_splitter(rsp_trans)
-
-        if sc_trans == 200:
-            return js_trans
-
-        else:
-            logging.error(f"Could not download legacy transformations for project {self.parameters.project} in stack "
-                          f"{self.parameters.region}.\nReceived: {sc_trans} - {js_trans}.")
-            sys.exit(1)
+        return self.get_component_configurations('transformation')
 
     def get_storage_buckets(self) -> list:
 
@@ -132,9 +127,12 @@ class StorageClient(HttpClient):
                           f"{self.parameters.region}.\nReceived: {sc_buckets} - {js_buckets}.")
             sys.exit(1)
 
-    def get_all_tables(self) -> list:
+    def get_all_tables(self, include: bool = True) -> list:
 
-        par_tables = {'include': 'metadata,buckets,columns,columnMetadata'}
+        if include:
+            par_tables = {'include': 'metadata,buckets,columns,columnMetadata'}
+        else:
+            par_tables = {}
 
         rsp_tables = self.get_raw('tables', params=par_tables)
         sc_tables, js_tables = response_splitter(rsp_tables)
@@ -182,6 +180,16 @@ class StorageClient(HttpClient):
         kwargs['q'] = 'event:storage.workspaceLoaded'
 
         return self._get_paged_events('events', **kwargs)
+
+    def get_table_load_events(self, table_id: str, date: str, **kwargs):
+
+        TABLE_LOAD_EVENTS = ['storage.tableExported', 'storage.tableImportError', 'storage.tableImportStarted',
+                             'storage.tableImportDone', 'storage.workspaceLoaded', 'storage.workspaceTableCloned']
+
+        kwargs['component'] = 'storage'
+        kwargs['q'] = f"({' OR '.join([f'event:{e}' for e in TABLE_LOAD_EVENTS])}) AND created:>={date}"
+
+        return self._get_paged_events(f'tables/{table_id}/events', **kwargs)
 
     def _get_paged_events(self, url: str, **kwargs):
 

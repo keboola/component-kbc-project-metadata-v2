@@ -41,6 +41,8 @@ class Writer:
 
         save_aside = {}
         for field in self.tdf.json_columns:
+            if field not in row:
+                continue
             save_aside[field] = json.dumps(row[field])
             del row[field]
 

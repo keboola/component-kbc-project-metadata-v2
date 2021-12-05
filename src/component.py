@@ -1,3 +1,4 @@
+import dateparser
 import dateutil.parser
 import logging
 import sys
@@ -39,7 +40,7 @@ KEY_GET_ORGANIZATION_USERS = 'get_organization_users'
 KEY_GET_TRIGGERS = 'get_triggers'
 KEY_GET_COLUMNS = 'get_columns'
 KEY_GET_WORKSPACE_LOAD_EVENTS = 'get_workspace_load_events'
-KEY_GET_TABLE_STORAGE_EVENTS = 'get_table_storage_events'
+KEY_GET_TABLES_LOAD_EVENTS = 'get_tables_load_events'
 
 # Token keys
 KEY_MAN_TOKEN = '#token'
@@ -56,7 +57,7 @@ TR_V2_CMP_ID = ['keboola.snowflake-transformation', 'keboola.python-transformati
 
 STORAGE_ENDPOINTS = [KEY_GET_ALL_CONFIGURATIONS, KEY_GET_TOKENS, KEY_GET_ORCHESTRATIONS, KEY_GET_WAITING_JOBS,
                      KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS, KEY_GET_WORKSPACE_LOAD_EVENTS,
-                     KEY_GET_TRANSFORMATIONS_V2, KEY_GET_TABLE_STORAGE_EVENTS]
+                     KEY_GET_TRANSFORMATIONS_V2, KEY_GET_TABLES_LOAD_EVENTS]
 MANAGEMENT_ENDPOINTS = [KEY_GET_PROJECT_USERS, KEY_GET_ORGANIZATION_USERS]
 
 
@@ -118,8 +119,8 @@ class Component(CommonInterface):
         self.last_processed_transformations = state.get('tr_last_processed_id', {})
         if isinstance(self.last_processed_transformations, list):
             self.last_processed_transformations = {}
-        self.new_processed_transformations = {}
 
+        self.latest_date = state.get('date', dateparser.parse("7 days ago").strftime("%Y-%m-%d"))
         self.table_definitions = {}
 
         logging.debug(f"Using {self.parameters.client_to_use} token.")
@@ -221,9 +222,9 @@ class Component(CommonInterface):
 
     def determine_stack(self, region: str):
 
-        if region == 'us-east-1' or region == 'keboola.com':
+        if region == 'us-east-1':
             return 'keboola.com'
-        elif region == 'eu-central-1' or region == 'eu-central-1.keboola.com':
+        elif region == 'eu-central-1':
             return 'eu-central-1.keboola.com'
         elif region == KEY_CURRENT:
             return self.parameters.current_stack.replace('connection.', '')
@@ -370,7 +371,7 @@ class Component(CommonInterface):
         orchestrations_sapi = self.client.storage.get_orchestrations()
 
         with Writer(_orch_tdf) as wrt:
-            wrt.write_rows(orchestrations)
+            wrt.write_rows(orchestrations, parent_dict)
 
         _orch_notif_tdf = self.build_table_definition('orchestrations-notifications')
         _orch_tasks_tdf = self.build_table_definition('orchestrations-tasks')
@@ -425,7 +426,7 @@ class Component(CommonInterface):
                 storage_events = self.client.storage.get_workspace_load_events(runId=run_id)
                 wrt.write_rows(storage_events, parent_dict)
 
-        self.new_processed_transformations[project_key] = last_processed_job_id
+        self.last_processed_transformations[project_key] = last_processed_job_id
 
     def get_transformations_v1(self, parent_dict: dict):
 
@@ -497,6 +498,72 @@ class Component(CommonInterface):
                                 enumerate(transformation['configuration'].get('queries', []))]
                     wrt_queries.write_rows(_queries, _tr_parent)
 
+    def get_transformations_v2(self, parent_dict: dict):
+
+        _tr_tdf = self.build_table_definition('transformations-v2')
+        _tr_inputs_tdf = self.build_table_definition('transformations-v2-inputs')
+        _tr_inputs_md_tdf = self.build_table_definition('transformations-v2-inputs-metadata')
+        _tr_outputs_tdf = self.build_table_definition('transformations-v2-outputs')
+        _tr_codes_tdf = self.build_table_definition('transformations-v2-codes')
+        wrt_tr = Writer(_tr_tdf)
+        wrt_tr_inputs = Writer(_tr_inputs_tdf)
+        wrt_tr_inputs_md = Writer(_tr_inputs_md_tdf)
+        wrt_tr_outputs = Writer(_tr_outputs_tdf)
+        wrt_tr_codes = Writer(_tr_codes_tdf)
+
+        with wrt_tr, wrt_tr_inputs, wrt_tr_inputs_md, wrt_tr_outputs, wrt_tr_codes:
+
+            for tr_cmp_id in TR_V2_CMP_ID:
+                tr_configs = self.client.storage.get_component_configurations(tr_cmp_id)
+
+                _cmp_pdict = {**{'component_id': tr_cmp_id}, **parent_dict}
+
+                for tr in tr_configs:
+                    tr_id = tr['id']
+                    tr['packages'] = ','.join(tr['configuration'].get('parameters', {}).get('packages', []))
+                    tr['variables_id'] = tr['configuration'].get('variables_id', '')
+                    tr['variables_values_id'] = tr['configuration'].get('variables_values_id', '')
+
+                    wrt_tr.write_row(tr, _cmp_pdict)
+
+                    _tr_pdict = {**{'transformation_id': tr_id}, **_cmp_pdict}
+                    io = tr['configuration'].get('storage', {})
+
+                    for ti in io.get('input', {}).get('tables', []):
+                        wrt_tr_inputs.write_row(ti, _tr_pdict)
+
+                        _ti_pdict = {**{'table_source': ti['source'],
+                                        'table_destination': ti['destination']},
+                                     **_tr_pdict}
+
+                        wrt_tr_inputs_md.write_rows(ti.get('column_types', []), _ti_pdict)
+
+                    for to in io.get('output', {}).get('tables', []):
+                        wrt_tr_outputs.write_row(to, _tr_pdict)
+
+                    code_blocks = tr['configuration'].get('parameters', {}).get('blocks', [])
+
+                    for cb_idx, cb in enumerate(code_blocks):
+                        _cb_parent = {**{'block_name': cb['name'], 'block_index': cb_idx}, **_tr_pdict}
+
+                        for c_idx, c in enumerate(cb.get('codes', [])):
+                            _c_parent = {**_cb_parent, **{'code_name': c['name'], 'code_index': c_idx}}
+
+                            for sc_idx, sc in enumerate(c.get('script', [])):
+                                wrt_tr_codes.write_row({'script': sc, 'script_index': sc_idx}, _c_parent)
+
+    def get_table_load_events(self, parent_dict: dict):
+
+        _table_events_tdf = self.build_table_definition('tables-load-events')
+        wrt = Writer(_table_events_tdf)
+
+        table_ids = [t['id'] for t in self.client.storage.get_all_tables(include=False)]
+
+        with wrt:
+            for table in table_ids:
+                load_events = self.client.storage.get_table_load_events(table, self.latest_date)
+                wrt.write_rows(load_events, parent_dict)
+
     def get_project_data(self, project_id: str, project_token: str, project_key: str):
 
         self.client.init_storage_and_syrup_clients(self.parameters.region, project_token, project_id)
@@ -525,6 +592,13 @@ class Component(CommonInterface):
 
         if self.parameters.datasets.get(KEY_GET_TRANSFORMATIONS):
             self.get_transformations_v1(_p_dict)
+
+        if self.parameters.datasets.get(KEY_GET_TRANSFORMATIONS_V2):
+            self.get_transformations_v2(_p_dict)
+
+        if self.parameters.datasets.get(KEY_GET_TABLES_LOAD_EVENTS):
+            self.get_table_load_events(_p_dict)
+            self.latest_date = dateparser.parse('today').strftime('%Y-%m-%d')
 
     def run(self):
 
@@ -607,107 +681,12 @@ class Component(CommonInterface):
 
         new_state = {
             'tokens': self.new_tokens,
-            'tr_last_processed_id': self.new_processed_transformations
+            'tr_last_processed_id': self.last_processed_transformations,
+            'date': self.latest_date
         }
 
         self.write_state_file(new_state)
         self.write_manifests(self.table_definitions.values())
-
-
-'''
-        if self.parameters.client_to_use == 'management':
-
-            _management_region = self.parameters.master_token[0]['region'] if self.paramCustomStack is None \
-                else self.paramCustomStack
-
-            # get current stack
-            if _management_region == KEY_CURRENT:
-                if not self.environment_variables.stack_id:
-                    raise ValueError("Can't use CURRENT option, the stack is not available in environment")
-                _management_region = self._get_current_region()
-
-            self.client.initManagement(_management_region, self.parameters.master_token[0]['#token'],
-                                       self.parameters.master_token[0]['org_id'])
-
-            all_projects = self.client.management.getOrganization()['projects']
-
-            if self.parameters.datasets.get(KEY_GET_ORGANIZATION_USERS) is True:
-                org_users = self.client.management.getOrganizationUsers()
-                self.writers.organization_users.writerows(org_users, parentdict={
-                    'organization_id': self.client.management.paramOrganization,
-                    'region': self.client.management.paramRegion
-                })
-
-            if self.parameters.datasets.get(KEY_GET_PROJECT_USERS) is True:
-
-                for project in all_projects:
-                    p_dict = {'project_id': project['id'], 'region': _management_region}
-                    users = self.client.management.getProjectUsers(project['id'])
-                    self.writers.project_users.writerows(users, parentdict=p_dict)
-
-            storage_booolean = [self.parameters.datasets.get(key, False) for key in STORAGE_ENDPOINTS]
-            if any(storage_booolean) is True:
-
-                for prj in all_projects:
-
-                    prj_id = str(prj['id'])
-                    prj_name = prj['name']
-                    prj_region = _management_region
-                    prj_token_description = prj_name + TOKEN_SUFFIX
-                    prj_token_key = '|'.join([prj_region.replace('-', '_'), prj_id])
-
-                    prj_token_old = self.previous_tokens.get(prj_token_key)
-
-                    if prj_token_old is None:
-                        logging.debug(f"Creating new storage token for project {prj_id} in region {prj_region}.")
-                        prj_token_new = self.client.management.createStorageToken(prj_id, prj_token_description)
-
-                        prj_token = {
-                            'id': prj_token_new['id'],
-                            '#token': prj_token_new['token'],
-                            'expires': self.convert_iso_format_to_epoch_timestamp(prj_token_new['expires'])
-                        }
-
-                    else:
-                        valid = self.is_token_valid(prj_token_old['#token'],
-                                                    prj_token_old['expires'], prj_region, prj_id)
-
-                        if valid is True:
-                            logging.debug(f"Using token {prj_token_old['id']} from state for project {prj_id}.")
-                            prj_token = prj_token_old
-
-                        else:
-                            logging.debug(f"Creating new storage token for project {prj_id} in region {prj_region}.")
-                            prj_token_new = self.client.management.createStorageToken(prj_id, prj_token_description)
-
-                            prj_token = {
-                                'id': prj_token_new['id'],
-                                '#token': prj_token_new['token'],
-                                'expires': self.convert_iso_format_to_epoch_timestamp(prj_token_new['expires'])
-                            }
-
-                    logging.info(f"Downloading data for project {prj_name} in region {prj_region}.")
-                    self.getDataForProject(prj_id, prj_token['#token'], prj_region, prj_token_key)
-                    self.new_tokens[prj_token_key] = prj_token
-
-        elif self.parameters.client_to_use == 'storage':
-
-            i = 0
-            for prj in self.parameters.tokens:
-
-                i += 1
-                prj_token = prj['#key']
-                prj_region = prj['region'] if self.paramCustomStack is None else self.paramCustomStack
-                prj_id = prj_token.split('-')[0]
-                prj_token_key = '|'.join([prj_region.replace('-', '_'), prj_id])
-
-                if prj_token == '':
-                    logging.error(f"Token at position {i} is empty.")
-                    sys.exit(1)
-
-                logging.info(f"Downloading data for project {prj_id} in region {prj_region}.")
-                self.getDataForProject(prj_id, prj_token, prj_region, prj_token_key)
-'''
 
 
 if __name__ == '__main__':

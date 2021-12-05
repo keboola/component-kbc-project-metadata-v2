@@ -178,3 +178,50 @@ FIELDS_R_WORKSPACE_TABLE_LOADS = ['id', 'region', 'project_id', 'event', 'compon
                                   'results', 'performance', 'token_id', 'token_name', 'uri']
 PK_WORKSPACE_TABLE_LOADS = ['id', 'region', 'project_id']
 JSON_WORKSPACE_TABLE_LOADS = ['context', 'params', 'results', 'performance']
+
+FIELDS_TRANSFORMATIONS_V2 = ['id', 'region', 'project_id', 'component_id', 'name', 'description', 'version', 'created',
+                             'creatorToken_id', 'creatorToken_description', 'changeDescription', 'packages',
+                             'variables_id', 'variables_values_id', 'currentVersion_created',
+                             'currentVersion_creatorToken_id', 'currentVersion_creatorToken_description']
+FIELDS_R_TRANSFORMATIONS_V2 = ['id', 'region', 'project_id', 'component_id', 'name', 'description', 'version',
+                               'created', 'creator_token_id', 'creator_token_description', 'change_description',
+                               'packages', 'variables_id', 'variables_values_id', 'current_version_created',
+                               'current_version_creator_token_id', 'current_version_creator_token_description']
+PK_TRANSFORMATIONS_V2 = ['id', 'region', 'project_id', 'component_id']
+JSON_TRANSFORMATIONS_V2 = []
+
+FIELDS_TRANSFORMATIONS_V2_INPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source',
+                                    'destination', 'where_column', 'where_values', 'where_operator', 'columns',
+                                    'changed_since']
+FIELDS_R_TRANSFORMATIONS_V2_INPUTS = FIELDS_TRANSFORMATIONS_V2_INPUTS
+PK_TRANSFORMATIONS_V2_INPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source', 'destination']
+JSON_TRANSFORMATIONS_V2_INPUTS = ['where_values', 'columns']
+
+FIELDS_TRANSFORMATIONS_V2_INPUTS_METADATA = ['transformation_id', 'region', 'project_id', 'component_id',
+                                             'table_source', 'table_destination', 'source', 'type', 'length',
+                                             'nullable', 'convert_empty_values_to_null']
+FIELDS_R_TRANSFORMATIONS_V2_INPUTS_METADATA = ['transformation_id', 'region', 'project_id', 'component_id',
+                                               'table_source', 'table_destination', 'column', 'type', 'length',
+                                               'nullable', 'convert_empty_values_to_null']
+PK_TRANSFORMATIONS_V2_INPUTS_METADATA = ['transformation_id', 'region', 'project_id', 'component_id',
+                                         'table_source', 'table_destination', 'column']
+JSON_TRANSFORMATIONS_V2_INPUTS_METADATA = []
+
+FIELDS_TRANSFORMATIONS_V2_OUTPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source',
+                                     'destination', 'incremental', 'delete_where_column', 'delete_where_operator',
+                                     'delete_where_values', 'primary_key']
+FIELDS_R_TRANSFORMATIONS_V2_OUTPUTS = FIELDS_TRANSFORMATIONS_V2_INPUTS
+PK_TRANSFORMATIONS_V2_OUTPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source', 'destination']
+JSON_TRANSFORMATIONS_V2_OUTPUTS = ['delete_where_values', 'primary_key']
+
+FIELDS_TRANSFORMATIONS_V2_CODES = ['transformation_id', 'region', 'project_id', 'component_id', 'block_name',
+                                   'block_index', 'code_name', 'code_index', 'script', 'script_index']
+FIELDS_R_TRANSFORMATIONS_V2_CODES = FIELDS_TRANSFORMATIONS_V2_CODES
+PK_TRANSFORMATIONS_V2_CODES = ['transformation_id', 'region', 'project_id', 'component_id', 'block_idx',
+                               'code_idx', 'script_idx']
+JSON_TRANSFORMATIONS_V2_CODES = []
+
+FIELDS_TABLES_LOAD_EVENTS = FIELDS_WORKSPACE_TABLE_LOADS
+FIELDS_R_TABLES_LOAD_EVENTS = FIELDS_R_WORKSPACE_TABLE_LOADS
+PK_TABLES_LOAD_EVENTS = PK_WORKSPACE_TABLE_LOADS
+JSON_TABLES_LOAD_EVENTS = JSON_WORKSPACE_TABLE_LOADS

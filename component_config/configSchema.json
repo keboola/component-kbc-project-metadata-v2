@@ -112,7 +112,9 @@
                 "get_transformations",
                 "get_project_users",
                 "get_organization_users",
-                "get_workspace_load_events"
+                "get_workspace_load_events",
+                "get_transformations_v2",
+                "get_tables_load_events"
             ],
             "title": "Project data to download",
             "properties": {
@@ -175,7 +177,7 @@
                 "get_transformations": {
                     "type": "boolean",
                     "format": "checkbox",
-                    "title": "Get Transformations and Their Details",
+                    "title": "Get Legacy Transformations and Their Details",
                     "description": "Downloads data to the transformation level, including input and output mappings, and queries.",
                     "propertyOrder": 4500
                 },
@@ -185,6 +187,20 @@
                     "title": "Get Load Events from Storage",
                     "description": "Downloads data about loading the tables from storage into transformation workspaces.",
                     "propertyOrder": 4700
+                },
+                "get_tables_load_events": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Tables Load Events",
+                    "description": "Downloads information about all imports and exports of tables to workspaces, transformations or CSVs.",
+                    "propertyOrder": 4750
+                },
+                "get_transformations_v2": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Transformations v2 and Their Details",
+                    "description": "Downloads data about new transformations, including mappings and codes.",
+                    "propertyOrder": 4800
                 },
                 "get_project_users": {
                     "type": "boolean",
