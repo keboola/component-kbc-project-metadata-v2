@@ -16,7 +16,7 @@ from table_definitions import *  # noqa
 # Key for current stack selection
 KEY_CURRENT = 'current'
 
-APP_VERSION = '2.0.1'
+APP_VERSION = '2.0.2'
 TOKEN_SUFFIX = '_Telemetry_token'
 TOKEN_EXPIRATION_CUSHION = 30 * 60  # 30 minutes
 
