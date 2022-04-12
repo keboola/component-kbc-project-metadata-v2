@@ -1,7 +1,8 @@
 import logging
-import requests
 import sys
 from dataclasses import dataclass
+
+import requests
 from keboola.http_client import HttpClient
 
 DEFAULT_TOKEN_EXPIRATION = 26 * 60 * 60  # Default token expiration set to 26 hours
@@ -28,7 +29,6 @@ class ManAPIParameters:
 
 
 def response_splitter(response: requests.models.Response):
-
     if not isinstance(response, requests.models.Response):
         raise TypeError(f"Expecting type requests.models.Response, received type {type(response)}")
 
@@ -37,7 +37,6 @@ def response_splitter(response: requests.models.Response):
 
 
 class StorageClient(HttpClient):
-
     LIMIT = 100
 
     def __init__(self, region: str, token: str, project: str):
@@ -194,27 +193,31 @@ class StorageClient(HttpClient):
     def _get_paged_events(self, url: str, **kwargs):
 
         par_events = kwargs
-        par_events['limit'] = self.LIMIT
+        par_events['limit'] = 1000
 
         offset = 0
         is_complete = False
         all_events = []
+        max_id = 0
 
         while not is_complete:
-            par_events['offset'] = offset
+            par_events['offset'] = 0
+            if max_id:
+                par_events.pop('offset', None)
+                par_events['maxId'] = offset
 
             rsp_events = self.get_raw(url, params=par_events)
             sc_events, js_events = response_splitter(rsp_events)
 
             if sc_events == 200:
-                all_events += js_events
 
-                if len(js_events) < self.LIMIT:
+                all_events += js_events
+                if js_events and max_id != js_events[-1:][0]['id']:
+                    max_id = js_events[-1:][0]['id']
+
+                if not js_events or max_id == js_events[-1:][0]['id']:
                     is_complete = True
                     return all_events
-
-                else:
-                    offset += self.LIMIT
 
             else:
                 logging.error(f"Could not download events for url {url} in project {self.parameters.project} ",
@@ -223,7 +226,6 @@ class StorageClient(HttpClient):
 
 
 class SyrupClient(HttpClient):
-
     LIMIT = 1000
 
     def __init__(self, region: str, token: str, project: str):
