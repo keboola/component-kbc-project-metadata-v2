@@ -5,8 +5,6 @@ from dataclasses import dataclass
 import requests
 from keboola.http_client import HttpClient
 
-WORKSPACE_LOAD_EVENTS = ['event:storage.workspaceLoaded', 'event:storage.workspaceTableCloned']
-
 DEFAULT_TOKEN_EXPIRATION = 26 * 60 * 60  # Default token expiration set to 26 hours
 
 KEBOOLA_API_URLS = {
@@ -178,7 +176,7 @@ class StorageClient(HttpClient):
     def get_workspace_load_events(self, **kwargs):
 
         kwargs['component'] = 'storage'
-        kwargs['q'] = f"({' OR '.join([f'event:{e}' for e in WORKSPACE_LOAD_EVENTS])})"
+        kwargs['q'] = 'event:storage.workspaceLoaded'
 
         return self._get_paged_events('events', **kwargs)
 
