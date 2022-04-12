@@ -1,12 +1,12 @@
-import dateparser
-import dateutil.parser
 import logging
 import sys
 import time
-
 from contextlib import nullcontext
 from dataclasses import dataclass
 from hashlib import md5
+
+import dateparser
+import dateutil.parser
 from keboola.component import CommonInterface
 
 from client import Client, StorageClient
@@ -120,7 +120,7 @@ class Component(CommonInterface):
         if isinstance(self.last_processed_transformations, list):
             self.last_processed_transformations = {}
 
-        self.latest_date = state.get('date', dateparser.parse("7 days ago").strftime("%Y-%m-%d"))
+        self.latest_date = state.get('date', dateparser.parse("7 months ago").strftime("%Y-%m-%d"))
         self.table_definitions = {}
 
         logging.debug(f"Using {self.parameters.client_to_use} token.")
@@ -254,7 +254,6 @@ class Component(CommonInterface):
     def download_organization_data(self, project_ids: list):
 
         if self.parameters.datasets.get(KEY_GET_ORGANIZATION_USERS):
-
             logging.info(f"Downloading organization users for organization {self.management_token.organization_id} in "
                          f"stack {self.parameters.region}.")
             _org_pdict = {
@@ -690,6 +689,5 @@ class Component(CommonInterface):
 
 
 if __name__ == '__main__':
-
     m = Component()
     m.run()

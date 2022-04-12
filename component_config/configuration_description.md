@@ -82,3 +82,8 @@ The metadata extractor allows to download an extended set of objects from the Ke
     - **table(s)**: `organization-users`
     - **requirements**: a management token
     - **use case**: monitor users' access to organization
+- Get Tables Load Events (`get_table_load_events`)
+    - **description**: downloads all import/export events of table. First load will backfill all available (6month back), each consecutive will bring in new ones.
+    - **table(s)**: `table-load-events`
+    - **requirements**:  a storage token with unlimited access to all buckets
+    - **use case**: monitor table activity
