@@ -531,7 +531,8 @@ class Component(CommonInterface):
                     for ti in io.get('input', {}).get('tables', []):
                         wrt_tr_inputs.write_row(ti, _tr_pdict)
 
-                        _ti_pdict = {**{'table_source': ti.get('source', ''),
+                        source = ti.get('source') or ti.get('source_search')
+                        _ti_pdict = {**{'table_source': source,
                                         'table_destination': ti.get('destination', '')},
                                      **_tr_pdict}
 
