@@ -531,8 +531,8 @@ class Component(CommonInterface):
                     for ti in io.get('input', {}).get('tables', []):
                         wrt_tr_inputs.write_row(ti, _tr_pdict)
 
-                        _ti_pdict = {**{'table_source': ti['source'],
-                                        'table_destination': ti['destination']},
+                        _ti_pdict = {**{'table_source': ti.get('source', ''),
+                                        'table_destination': ti.get('destination', '')},
                                      **_tr_pdict}
 
                         wrt_tr_inputs_md.write_rows(ti.get('column_types', []), _ti_pdict)
