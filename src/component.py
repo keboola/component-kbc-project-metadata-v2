@@ -598,7 +598,6 @@ class Component(CommonInterface):
 
         if self.parameters.datasets.get(KEY_GET_TABLES_LOAD_EVENTS):
             self.get_table_load_events(_p_dict)
-            self.latest_date = dateparser.parse('today').strftime('%Y-%m-%d')
 
     def run(self):
 
@@ -682,7 +681,7 @@ class Component(CommonInterface):
         new_state = {
             'tokens': self.new_tokens,
             'tr_last_processed_id': self.last_processed_transformations,
-            'date': self.latest_date
+            'date': dateparser.parse('today').strftime('%Y-%m-%d')
         }
 
         self.write_state_file(new_state)
