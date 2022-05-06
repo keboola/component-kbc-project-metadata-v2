@@ -1,19 +1,55 @@
+import csv
 import logging
 import sys
 import time
 from contextlib import nullcontext
 from dataclasses import dataclass
 from hashlib import md5
+from pathlib import Path
 
 import dateparser
 import dateutil.parser
 from keboola.component import CommonInterface
 
 from client import Client, StorageClient
+from parser import FlattenJsonParser
 from result import Writer
 from table_definitions import *  # noqa
 
 # Key for current stack selection
+STORAGE_BUCKET_COLUMNS = ["project_id", "region", "uri",
+                          "id",
+                          "name",
+                          "displayName",
+                          "stage",
+                          "description",
+                          "tables",
+                          "created",
+                          "lastChangeDate",
+                          "isReadOnly",
+                          "dataSizeBytes",
+                          "rowsCount",
+                          "isMaintenance",
+                          "backend",
+                          "sharing",
+                          "directAccessEnabled",
+                          "directAccessSchemaName",
+                          "sourceBucket__id",
+                          "sourceBucket__name",
+                          "sourceBucket__displayName",
+                          "sourceBucket__stage",
+                          "sourceBucket__description",
+                          "sourceBucket__sharing",
+                          "sourceBucket__created",
+                          "sourceBucket__lastChangeDate",
+                          "sourceBucket__dataSizeBytes",
+                          "sourceBucket__rowsCount",
+                          "sourceBucket__backend",
+                          "sharingParameters",
+                          "sharedBy__id",
+                          "sharedBy__name",
+                          "sharedBy__date",
+                          "attributes"]
 KEY_CURRENT = 'current'
 
 APP_VERSION = '2.0.3'
@@ -363,6 +399,25 @@ class Component(CommonInterface):
 
             wrt_tables.write_rows(tables, parent_dict)
 
+    def get_buckets(self, parent_dict: dict):
+
+        buckets = self.client.storage.get_storage_buckets()
+        res_table = self.create_out_table_definition('storage_buckets.csv', primary_key=['id', 'project_id', 'region'],
+                                                     columns=STORAGE_BUCKET_COLUMNS)
+        self.table_definitions[res_table.name] = res_table
+        parser = FlattenJsonParser(child_separator='__', keys_to_ignore=['tables', 'project'], flatten_lists=False)
+
+        if Path(res_table.full_path).exists():
+            mode = 'a'
+        else:
+            mode = 'w+'
+
+        with open(res_table.full_path, mode) as out:
+            writer = csv.DictWriter(out, fieldnames=STORAGE_BUCKET_COLUMNS, extrasaction='ignore')
+            for t in buckets:
+                res = {**t, **parent_dict}
+                writer.writerow(parser.parse_row(res))
+
     def get_orchestrations(self, parent_dict: dict):
 
         _orch_tdf = self.build_table_definition('orchestrations')
@@ -598,7 +653,9 @@ class Component(CommonInterface):
 
         if self.parameters.datasets.get(KEY_GET_TABLES_LOAD_EVENTS):
             self.get_table_load_events(_p_dict)
-            self.latest_date = dateparser.parse('today').strftime('%Y-%m-%d')
+
+        if self.parameters.datasets.get('get_storage_buckets'):
+            self.get_buckets(_p_dict)
 
     def run(self):
 
@@ -682,7 +739,7 @@ class Component(CommonInterface):
         new_state = {
             'tokens': self.new_tokens,
             'tr_last_processed_id': self.last_processed_transformations,
-            'date': self.latest_date
+            'date': dateparser.parse('today').strftime('%Y-%m-%d')
         }
 
         self.write_state_file(new_state)

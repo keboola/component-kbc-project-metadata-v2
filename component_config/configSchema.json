@@ -160,6 +160,13 @@
                     "propertyOrder": 3500,
                     "description": "Downloads data and metadata about tables in storage."
                 },
+                "get_storage_buckets": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Storage Buckets",
+                    "propertyOrder": 3600,
+                    "description": "Downloads data and metadata about buckets in storage."
+                },
                 "get_columns": {
                     "type": "boolean",
                     "format": "checkbox",
