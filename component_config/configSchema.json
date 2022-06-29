@@ -139,6 +139,13 @@
                     "propertyOrder": 2500,
                     "description": "Downloads orchestrations, their tasks and notifications."
                 },
+                 "get_orchestrations_v2": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Orchestrations V2",
+                    "propertyOrder": 2600,
+                    "description": "Downloads orchestrations V2, their tasks and phases."
+                },
                 "get_triggers": {
                     "type": "boolean",
                     "format": "checkbox",

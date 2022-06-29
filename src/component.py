@@ -67,6 +67,7 @@ KEY_GET_ALL_CONFIGURATIONS = 'get_all_configurations'
 KEY_GET_TOKENS = 'get_tokens'
 KEY_GET_TOKENS_LAST_EVENTS = 'get_tokens_last_events'
 KEY_GET_ORCHESTRATIONS = 'get_orchestrations'
+KEY_GET_ORCHESTRATIONS_V2 = 'get_orchestrations_v2'
 KEY_GET_WAITING_JOBS = 'get_waiting_jobs'
 KEY_GET_TABLES = 'get_tables'
 KEY_GET_TRANSFORMATIONS = 'get_transformations'
@@ -93,7 +94,7 @@ TR_V2_CMP_ID = ['keboola.snowflake-transformation', 'keboola.python-transformati
 
 STORAGE_ENDPOINTS = [KEY_GET_ALL_CONFIGURATIONS, KEY_GET_TOKENS, KEY_GET_ORCHESTRATIONS, KEY_GET_WAITING_JOBS,
                      KEY_GET_TABLES, KEY_GET_TRANSFORMATIONS, KEY_GET_TRIGGERS, KEY_GET_WORKSPACE_LOAD_EVENTS,
-                     KEY_GET_TRANSFORMATIONS_V2, KEY_GET_TABLES_LOAD_EVENTS]
+                     KEY_GET_TRANSFORMATIONS_V2, KEY_GET_TABLES_LOAD_EVENTS, KEY_GET_ORCHESTRATIONS_V2]
 MANAGEMENT_ENDPOINTS = [KEY_GET_PROJECT_USERS, KEY_GET_ORGANIZATION_USERS]
 
 
@@ -418,6 +419,51 @@ class Component(CommonInterface):
                 res = {**t, **parent_dict}
                 writer.writerow(parser.parse_row(res))
 
+    def get_orchestrations_v2(self, parent_dict: dict):
+
+        _orchestrations_tdf = self.build_table_definition('orchestrations_v2')
+        _orchestrations_phases_tdf = self.build_table_definition('orchestrations_v2_phases')
+        _orchestrations_tasks_tdf = self.build_table_definition('orchestrations_v2_tasks')
+        orchestrations = self.client.storage.get_component_configurations("keboola.orchestrator")
+
+        with Writer(_orchestrations_tdf) as orch_wrt, \
+                Writer(_orchestrations_phases_tdf) as phase_wrt, \
+                Writer(_orchestrations_tasks_tdf) as task_wrt:
+            for orchestration in orchestrations:
+                orchestration_config = {
+                    'id': orchestration.get("id"),
+                    'region': parent_dict.get("region"),
+                    'project_id': parent_dict.get("project_id"),
+                    'name': orchestration.get("name"),
+                    'description': orchestration.get("description"),
+                    'createdTime': orchestration.get("created"),
+                    'token_id': orchestration.get("creatorToken", {}).get("id"),
+                    'token_description': orchestration.get("creatorToken", {}).get("description"),
+                    'version': orchestration.get("version"),
+                    'isDisabled': orchestration.get("isDisabled"),
+                    'isDeleted': orchestration.get("isDeleted")
+                }
+                orch_wrt.write_row(orchestration_config)
+                for phase in orchestration.get("configuration").get("phases", []):
+                    phase_wrt.write_row({"id": phase.get("id"),
+                                         'region': parent_dict.get("region"),
+                                         'project_id': parent_dict.get("project_id"),
+                                         "orchestration_id": orchestration.get("id"),
+                                         "name": phase.get("name"),
+                                         "dependsOn": phase.get("dependsOn")})
+                for task in orchestration.get("configuration").get("tasks", []):
+                    task_wrt.write_row({"id": task.get("id"),
+                                        'region': parent_dict.get("region"),
+                                        'project_id': parent_dict.get("project_id"),
+                                        "orchestration_id": orchestration.get("id"),
+                                        "name": task.get("name"),
+                                        "phase": task.get("phase"),
+                                        "component_id": task.get("task").get("componentId"),
+                                        "config_id": task.get("task").get("configId"),
+                                        "mode": task.get("task").get("mode"),
+                                        "continueOnFailure": task.get("continueOnFailure"),
+                                        "enabled": task.get("enabled")})
+
     def get_orchestrations(self, parent_dict: dict):
 
         _orch_tdf = self.build_table_definition('orchestrations')
@@ -638,6 +684,9 @@ class Component(CommonInterface):
 
         if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS):
             self.get_orchestrations(_p_dict)
+
+        if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS_V2):
+            self.get_orchestrations_v2(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TRIGGERS):
             self.get_triggers(_p_dict)

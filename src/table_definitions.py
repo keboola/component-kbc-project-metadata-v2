@@ -22,6 +22,26 @@ FIELDS_R_ORCHESTRATIONS_NOTIFICATIONS = FIELDS_ORCHESTRATIONS_NOTIFICATIONS
 PK_ORCHESTRATIONS_NOTIFICATIONS = ['orchestration_id', 'region', 'email', 'channel']
 JSON_ORCHESTRATIONS_NOTIFICATIONS = ['parameters']
 
+FIELDS_ORCHESTRATIONS_V2 = ['id', 'region', 'project_id', 'name', 'description', 'createdTime', 'token_id',
+                            'token_description', 'version', 'isDisabled', 'isDeleted']
+FIELDS_R_ORCHESTRATIONS_V2 = ['id', 'region', 'project_id', 'name', 'description', 'created_time', 'token_id',
+                              'token_description', 'version', 'is_disabled', 'is_deleted']
+
+PK_ORCHESTRATIONS_V2 = ['id', 'region', 'project_id']
+JSON_ORCHESTRATIONS_V2 = []
+
+FIELDS_ORCHESTRATIONS_V2_TASKS = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'phase', 'component_id',
+                                  'config_id', 'mode', 'continueOnFailure', 'enabled']
+FIELDS_R_ORCHESTRATIONS_V2_TASKS = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'phase', 'component_id',
+                                    'config_id', 'mode', 'continue_on_failure', 'enabled']
+PK_ORCHESTRATIONS_V2_TASKS = ['id', 'region', 'project_id']
+JSON_ORCHESTRATIONS_V2_TASKS = []
+
+FIELDS_ORCHESTRATIONS_V2_PHASES = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'dependsOn']
+FIELDS_R_ORCHESTRATIONS_V2_PHASES = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'depends_on']
+PK_ORCHESTRATIONS_V2_PHASES = ['id', 'region', 'project_id']
+JSON_ORCHESTRATIONS_V2_PHASES = []
+
 FIELDS_WAITING_JOBS = ['id', 'region', 'runId', 'project_id', 'project_name', 'token_id', 'token_description',
                        'component', 'status', 'createdTime', 'startTime', 'endTime', 'params_config',
                        'params_configBucketId']
