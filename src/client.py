@@ -1,6 +1,7 @@
 import logging
 import sys
 from dataclasses import dataclass
+from json import JSONDecodeError
 
 import requests
 from keboola.http_client import HttpClient
@@ -33,7 +34,11 @@ def response_splitter(response: requests.models.Response):
         raise TypeError(f"Expecting type requests.models.Response, received type {type(response)}")
 
     else:
-        return response.status_code, response.json()
+        try:
+            return response.status_code, response.json()
+        except JSONDecodeError as e:
+            logging.error(f"Cannot parse response : {response.text} from: {response.request.path_url}")
+            raise e
 
 
 class StorageClient(HttpClient):
