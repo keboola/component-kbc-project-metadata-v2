@@ -476,7 +476,7 @@ class Component(CommonInterface):
         except requests.exceptions.ConnectionError:
             logging.exception("Orchestrations are not available in the project you are extracting metadata from, "
                               "extract the Orchestrations V2 instead.")
-            raise sys.exit(1)
+            sys.exit(1)
         orchestrations_sapi = self.client.storage.get_orchestrations()
 
         with Writer(_orch_tdf) as wrt:
