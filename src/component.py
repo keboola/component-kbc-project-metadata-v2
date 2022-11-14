@@ -470,11 +470,13 @@ class Component(CommonInterface):
 
     def get_orchestrations(self, parent_dict: dict):
 
-        if parent_dict.get("region") == 'north-europe.azure.keboola.com':
-            logging.warning("Orchestrations are not available in the north-europe.azure stack, only Orchestrations V2 ")
-            return
         _orch_tdf = self.build_table_definition('orchestrations')
-        orchestrations = self.client.syrup.get_orchestrations()
+        try:
+            orchestrations = self.client.syrup.get_orchestrations()
+        except requests.exceptions.ConnectionError:
+            logging.exception("Orchestrations are not available in the project you are extracting metadata from, "
+                              "extract the Orchestrations V2 instead.")
+            raise sys.exit(1)
         orchestrations_sapi = self.client.storage.get_orchestrations()
 
         with Writer(_orch_tdf) as wrt:
