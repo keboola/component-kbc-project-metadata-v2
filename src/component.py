@@ -682,39 +682,51 @@ class Component(CommonInterface):
         _p_dict = {'region': self.parameters.region, 'project_id': project_id}
 
         if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS):
+            logging.info("Fetching metadata of Orchestrations")
             self.get_orchestrations(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_WAITING_JOBS):
+            logging.info("Fetching metadata of waiting jobs")
             self.get_waiting_jobs(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TOKENS):
+            logging.info("Fetching metadata of Tokens")
             self.get_tokens_and_events(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_ALL_CONFIGURATIONS):
+            logging.info("Fetching metadata of All Configurations")
             self.get_all_configurations(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TABLES):
+            logging.info("Fetching metadata of Tables")
             self.get_tables(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS_V2):
+            logging.info("Fetching metadata of Orchestrations V2")
             self.get_orchestrations_v2(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TRIGGERS):
+            logging.info("Fetching metadata of Triggers")
             self.get_triggers(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_WORKSPACE_LOAD_EVENTS):
+            logging.info("Fetching metadata of Workspace Load Events")
             self.get_workspace_load_events(_p_dict, project_key)
 
         if self.parameters.datasets.get(KEY_GET_TRANSFORMATIONS):
+            logging.info("Fetching metadata of Transformations")
             self.get_transformations_v1(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TRANSFORMATIONS_V2):
+            logging.info("Fetching metadata of Transformations V2")
             self.get_transformations_v2(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TABLES_LOAD_EVENTS):
+            logging.info("Fetching metadata of Table Load Events")
             self.get_table_load_events(_p_dict)
 
         if self.parameters.datasets.get('get_storage_buckets'):
+            logging.info("Fetching metadata of Storage Buckets")
             self.get_buckets(_p_dict)
 
     def run(self):
