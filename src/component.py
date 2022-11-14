@@ -8,6 +8,7 @@ from hashlib import md5
 from pathlib import Path
 
 import dateparser
+import requests
 import dateutil.parser
 from keboola.component import CommonInterface
 
@@ -319,7 +320,10 @@ class Component(CommonInterface):
     def get_waiting_jobs(self, parent_dict: dict):
 
         _waiting_jobs_tdf = self.build_table_definition('waiting-jobs')
-        jobs = self.client.syrup.get_waiting_and_processing_jobs()
+        try:
+            jobs = self.client.syrup.get_waiting_and_processing_jobs()
+        except requests.exceptions.ConnectionError:
+            jobs = self.client.queue.get_waiting_and_processing_jobs()
 
         with Writer(_waiting_jobs_tdf) as wrt:
             wrt.write_rows(jobs, parent_dict)
@@ -466,6 +470,9 @@ class Component(CommonInterface):
 
     def get_orchestrations(self, parent_dict: dict):
 
+        if parent_dict.get("region") == 'north-europe.azure.keboola.com':
+            logging.warning("Orchestrations are not available in the north-europe.azure stack, only Orchestrations V2 ")
+            return
         _orch_tdf = self.build_table_definition('orchestrations')
         orchestrations = self.client.syrup.get_orchestrations()
         orchestrations_sapi = self.client.storage.get_orchestrations()
@@ -509,8 +516,10 @@ class Component(CommonInterface):
 
         _ws_load_events_tdf = self.build_table_definition('workspace-table-loads')
         last_processed_job_id = self.last_processed_transformations.get(project_key)
-        transformation_jobs = self.client.syrup.get_transformation_jobs(last_processed_job_id)
-
+        try:
+            transformation_jobs = self.client.syrup.get_transformation_jobs(last_processed_job_id)
+        except requests.exceptions.ConnectionError:
+            transformation_jobs = self.client.queue.get_transformation_jobs(last_processed_job_id)
         transformation_jobs.reverse()
         encountered_processing = False
 
@@ -670,6 +679,9 @@ class Component(CommonInterface):
         self.client.init_storage_and_syrup_clients(self.parameters.region, project_token, project_id)
         _p_dict = {'region': self.parameters.region, 'project_id': project_id}
 
+        if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS):
+            self.get_orchestrations(_p_dict)
+
         if self.parameters.datasets.get(KEY_GET_WAITING_JOBS):
             self.get_waiting_jobs(_p_dict)
 
@@ -681,9 +693,6 @@ class Component(CommonInterface):
 
         if self.parameters.datasets.get(KEY_GET_TABLES):
             self.get_tables(_p_dict)
-
-        if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS):
-            self.get_orchestrations(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS_V2):
             self.get_orchestrations_v2(_p_dict)
