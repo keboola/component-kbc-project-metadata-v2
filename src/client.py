@@ -10,6 +10,7 @@ DEFAULT_TOKEN_EXPIRATION = 26 * 60 * 60  # Default token expiration set to 26 ho
 
 KEBOOLA_API_URLS = {
     'syrup': 'https://syrup.{REGION}',
+    'queue': 'https://queue.{REGION}',
     'storage': 'https://connection.{REGION}/v2/storage',
     'management': 'https://connection.{REGION}/manage',
 }
@@ -240,7 +241,8 @@ class SyrupClient(HttpClient):
 
         logging.debug(f"Syrup URL set to: {_url}")
 
-        super().__init__(base_url=_url, default_http_header=_default_header)
+        super().__init__(base_url=_url, default_http_header=_default_header, status_forcelist=(500, 502, 504),
+                         max_retries=2)
         self.parameters = SAPIParameters(token, region, project)
 
     def get_waiting_and_processing_jobs(self) -> list:
@@ -320,6 +322,71 @@ class SyrupClient(HttpClient):
                           f"project {self.parameters.project} in stack {self.parameters.region}.\n"
                           f"Received: {sc_tasks} - {js_tasks}.")
             sys.exit(1)
+
+
+class QueueClient(HttpClient):
+    LIMIT = 1000
+
+    def __init__(self, region: str, token: str, project: str):
+
+        _default_header = {'x-storageapi-token': token}
+        _url = KEBOOLA_API_URLS['queue'].format(REGION=region)
+
+        logging.debug(f"Queue URL set to: {_url}")
+
+        super().__init__(base_url=_url, default_http_header=_default_header)
+        self.parameters = SAPIParameters(token, region, project)
+
+    def get_waiting_and_processing_jobs(self) -> list:
+
+        par_jobs = {'q': 'status:waiting OR status:processing'}
+        return self._get_paged_jobs(**par_jobs)
+
+    def get_transformation_jobs(self, last_job_id: str = None, **kwargs) -> list:
+
+        q = '(component:transformation OR params.component:transformation)'
+        # ' AND -(status:processing OR status:waiting OR status:terminating)'
+
+        if last_job_id is not None:
+            q += f' AND id:>{last_job_id}'
+            logging.debug(f"Downloading transformations jobs since last job id {last_job_id}.")
+        else:
+            q += ' AND createdTime:>now-7d'
+            logging.debug("Downloading transformations jobs created in the last 7 days.")
+
+        kwargs['q'] = q
+
+        return self._get_paged_jobs(**kwargs)
+
+    def _get_paged_jobs(self, **kwargs) -> list:
+
+        par_jobs = kwargs
+        par_jobs['limit'] = self.LIMIT
+
+        offset = 0
+        is_complete = False
+        all_jobs = []
+
+        while is_complete is False:
+            par_jobs['offset'] = offset
+
+            rsp_jobs = self.get_raw('jobs', params=par_jobs)
+            sc_jobs, js_jobs = response_splitter(rsp_jobs)
+
+            if sc_jobs == 200:
+                all_jobs += js_jobs
+
+                if len(js_jobs) < self.LIMIT:
+                    is_complete = True
+                    return all_jobs
+
+                else:
+                    offset += self.LIMIT
+
+            else:
+                logging.error(f"Could not download jobs for project {self.parameters.project} in stack "
+                              f"{self.parameters.region}.\nReceived: {sc_jobs} - {js_jobs}.")
+                sys.exit(1)
 
 
 class ManagementClient(HttpClient):
@@ -426,10 +493,12 @@ class Client:
         self.management = None
         self.syrup = None
         self.storage = None
+        self.queue = None
 
     def init_storage_and_syrup_clients(self, region, token, project):
         self.storage = StorageClient(region, token, project)
         self.syrup = SyrupClient(region, token, project)
+        self.queue = QueueClient(region, token, project)
 
     def init_management_client(self, region, token, organization):
         self.management = ManagementClient(region, token, organization)

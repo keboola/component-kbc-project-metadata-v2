@@ -8,6 +8,7 @@ from hashlib import md5
 from pathlib import Path
 
 import dateparser
+import requests
 import dateutil.parser
 from keboola.component import CommonInterface
 
@@ -319,7 +320,10 @@ class Component(CommonInterface):
     def get_waiting_jobs(self, parent_dict: dict):
 
         _waiting_jobs_tdf = self.build_table_definition('waiting-jobs')
-        jobs = self.client.syrup.get_waiting_and_processing_jobs()
+        try:
+            jobs = self.client.syrup.get_waiting_and_processing_jobs()
+        except requests.exceptions.ConnectionError:
+            jobs = self.client.queue.get_waiting_and_processing_jobs()
 
         with Writer(_waiting_jobs_tdf) as wrt:
             wrt.write_rows(jobs, parent_dict)
@@ -467,7 +471,12 @@ class Component(CommonInterface):
     def get_orchestrations(self, parent_dict: dict):
 
         _orch_tdf = self.build_table_definition('orchestrations')
-        orchestrations = self.client.syrup.get_orchestrations()
+        try:
+            orchestrations = self.client.syrup.get_orchestrations()
+        except requests.exceptions.ConnectionError:
+            logging.exception("Orchestrations are not available in the project you are extracting metadata from, "
+                              "extract the Orchestrations V2 instead.")
+            sys.exit(1)
         orchestrations_sapi = self.client.storage.get_orchestrations()
 
         with Writer(_orch_tdf) as wrt:
@@ -509,8 +518,10 @@ class Component(CommonInterface):
 
         _ws_load_events_tdf = self.build_table_definition('workspace-table-loads')
         last_processed_job_id = self.last_processed_transformations.get(project_key)
-        transformation_jobs = self.client.syrup.get_transformation_jobs(last_processed_job_id)
-
+        try:
+            transformation_jobs = self.client.syrup.get_transformation_jobs(last_processed_job_id)
+        except requests.exceptions.ConnectionError:
+            transformation_jobs = self.client.queue.get_transformation_jobs(last_processed_job_id)
         transformation_jobs.reverse()
         encountered_processing = False
 
@@ -670,40 +681,52 @@ class Component(CommonInterface):
         self.client.init_storage_and_syrup_clients(self.parameters.region, project_token, project_id)
         _p_dict = {'region': self.parameters.region, 'project_id': project_id}
 
+        if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS):
+            logging.info("Fetching metadata of Orchestrations")
+            self.get_orchestrations(_p_dict)
+
         if self.parameters.datasets.get(KEY_GET_WAITING_JOBS):
+            logging.info("Fetching metadata of waiting jobs")
             self.get_waiting_jobs(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TOKENS):
+            logging.info("Fetching metadata of Tokens")
             self.get_tokens_and_events(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_ALL_CONFIGURATIONS):
+            logging.info("Fetching metadata of All Configurations")
             self.get_all_configurations(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TABLES):
+            logging.info("Fetching metadata of Tables")
             self.get_tables(_p_dict)
 
-        if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS):
-            self.get_orchestrations(_p_dict)
-
         if self.parameters.datasets.get(KEY_GET_ORCHESTRATIONS_V2):
+            logging.info("Fetching metadata of Orchestrations V2")
             self.get_orchestrations_v2(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TRIGGERS):
+            logging.info("Fetching metadata of Triggers")
             self.get_triggers(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_WORKSPACE_LOAD_EVENTS):
+            logging.info("Fetching metadata of Workspace Load Events")
             self.get_workspace_load_events(_p_dict, project_key)
 
         if self.parameters.datasets.get(KEY_GET_TRANSFORMATIONS):
+            logging.info("Fetching metadata of Transformations")
             self.get_transformations_v1(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TRANSFORMATIONS_V2):
+            logging.info("Fetching metadata of Transformations V2")
             self.get_transformations_v2(_p_dict)
 
         if self.parameters.datasets.get(KEY_GET_TABLES_LOAD_EVENTS):
+            logging.info("Fetching metadata of Table Load Events")
             self.get_table_load_events(_p_dict)
 
         if self.parameters.datasets.get('get_storage_buckets'):
+            logging.info("Fetching metadata of Storage Buckets")
             self.get_buckets(_p_dict)
 
     def run(self):
