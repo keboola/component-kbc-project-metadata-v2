@@ -229,8 +229,9 @@ JSON_TRANSFORMATIONS_V2_INPUTS_METADATA = []
 
 FIELDS_TRANSFORMATIONS_V2_OUTPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source',
                                      'destination', 'incremental', 'delete_where_column', 'delete_where_operator',
-                                     'delete_where_values', 'primary_key']
-FIELDS_R_TRANSFORMATIONS_V2_OUTPUTS = FIELDS_TRANSFORMATIONS_V2_INPUTS
+                                     'delete_where_values', 'primary_key', 'where_column', 'where_values',
+                                     'where_operator', 'columns', 'changed_since']
+FIELDS_R_TRANSFORMATIONS_V2_OUTPUTS = FIELDS_TRANSFORMATIONS_V2_OUTPUTS
 PK_TRANSFORMATIONS_V2_OUTPUTS = ['transformation_id', 'region', 'project_id', 'component_id', 'source', 'destination']
 JSON_TRANSFORMATIONS_V2_OUTPUTS = ['delete_where_values', 'primary_key']
 
