@@ -37,8 +37,9 @@ FIELDS_R_ORCHESTRATIONS_V2_TASKS = ['id', 'orchestration_id', 'region', 'project
 PK_ORCHESTRATIONS_V2_TASKS = ['id', 'region', 'project_id']
 JSON_ORCHESTRATIONS_V2_TASKS = []
 
-FIELDS_ORCHESTRATIONS_V2_PHASES = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'dependsOn']
-FIELDS_R_ORCHESTRATIONS_V2_PHASES = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'depends_on']
+FIELDS_ORCHESTRATIONS_V2_PHASES = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'dependsOn', 'phase_index']
+FIELDS_R_ORCHESTRATIONS_V2_PHASES = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'depends_on',
+                                     'phase_index']
 PK_ORCHESTRATIONS_V2_PHASES = ['id', 'region', 'project_id']
 JSON_ORCHESTRATIONS_V2_PHASES = []
 

@@ -8,8 +8,8 @@ from hashlib import md5
 from pathlib import Path
 
 import dateparser
-import requests
 import dateutil.parser
+import requests
 from keboola.component import CommonInterface
 
 from client import Client, StorageClient
@@ -448,13 +448,14 @@ class Component(CommonInterface):
                     'isDeleted': orchestration.get("isDeleted")
                 }
                 orch_wrt.write_row(orchestration_config)
-                for phase in orchestration.get("configuration").get("phases", []):
+                for idx, phase in enumerate(orchestration.get("configuration").get("phases", [])):
                     phase_wrt.write_row({"id": phase.get("id"),
                                          'region': parent_dict.get("region"),
                                          'project_id': parent_dict.get("project_id"),
                                          "orchestration_id": orchestration.get("id"),
                                          "name": phase.get("name"),
-                                         "dependsOn": phase.get("dependsOn")})
+                                         "dependsOn": phase.get("dependsOn"),
+                                         "phase_index": idx})
                 for task in orchestration.get("configuration").get("tasks", []):
                     task_wrt.write_row({"id": task.get("id"),
                                         'region': parent_dict.get("region"),
