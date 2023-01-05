@@ -34,7 +34,7 @@ FIELDS_ORCHESTRATIONS_V2_TASKS = ['id', 'orchestration_id', 'region', 'project_i
                                   'config_id', 'mode', 'continueOnFailure', 'enabled']
 FIELDS_R_ORCHESTRATIONS_V2_TASKS = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'phase', 'component_id',
                                     'config_id', 'mode', 'continue_on_failure', 'enabled']
-PK_ORCHESTRATIONS_V2_TASKS = ['id', 'region', 'project_id']
+PK_ORCHESTRATIONS_V2_TASKS = ['id', 'orchestration_id','region', 'project_id']
 JSON_ORCHESTRATIONS_V2_TASKS = []
 
 FIELDS_ORCHESTRATIONS_V2_PHASES = ['id', 'orchestration_id', 'region', 'project_id', 'name', 'dependsOn', 'phase_index']
