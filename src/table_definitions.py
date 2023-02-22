@@ -188,7 +188,7 @@ JSON_TRIGGERS = []
 
 FIELDS_TRIGGERS_TABLES = ['trigger_id', 'region', 'project_id', 'tableId']
 FIELDS_R_TRIGGERS_TABLES = ['trigger_id', 'region', 'project_id', 'table_id']
-PK_TRIGGERS_TABLES = ['trigger_id', 'region', 'project_id']
+PK_TRIGGERS_TABLES = ['trigger_id', 'region', 'project_id', 'table_id']
 JSON_TRIGGERS_TABLES = []
 
 FIELDS_WORKSPACE_TABLE_LOADS = ['id', 'region', 'project_id', 'event', 'component', 'message', 'runId', 'created',
