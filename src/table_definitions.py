@@ -247,3 +247,14 @@ FIELDS_TABLES_LOAD_EVENTS = FIELDS_WORKSPACE_TABLE_LOADS
 FIELDS_R_TABLES_LOAD_EVENTS = FIELDS_R_WORKSPACE_TABLE_LOADS
 PK_TABLES_LOAD_EVENTS = PK_WORKSPACE_TABLE_LOADS
 JSON_TABLES_LOAD_EVENTS = JSON_WORKSPACE_TABLE_LOADS
+
+FIELDS_SCHEDULES = ["id", "tokenId", "configurationId", "configurationVersionId", 'region', 'project_id',
+                    "schedule__cronTab", "schedule__timezone", "schedule__state", "target__componentId",
+                    "target__configurationId", "target__configurationRowIds", "target__mode", "target__tag",
+                    "executions"]
+FIELDS_R_SCHEDULES = ["id", "token_id", "configuration_id", "configuration_version_id", 'region', 'project_id',
+                      "schedule__cronTab", "schedule__timezone", "schedule__state", "target__component_id",
+                      "target__configuration_id", "target__configuration_row_ids", "target__mode", "target__tag",
+                      "executions"]
+JSON_SCHEDULES = []
+PK_SCHEDULES = ["id", 'region', 'project_id']

@@ -79,6 +79,7 @@ KEY_GET_TRIGGERS = 'get_triggers'
 KEY_GET_COLUMNS = 'get_columns'
 KEY_GET_WORKSPACE_LOAD_EVENTS = 'get_workspace_load_events'
 KEY_GET_TABLES_LOAD_EVENTS = 'get_tables_load_events'
+KEY_GET_SCHEDULES = "get_schedules"
 
 # Token keys
 KEY_MAN_TOKEN = '#token'
@@ -423,6 +424,19 @@ class Component(CommonInterface):
                 res = {**t, **parent_dict}
                 writer.writerow(parser.parse_row(res))
 
+    def get_schedules(self, parent_dict: dict):
+        _table_events_tdf = self.build_table_definition('schedules')
+        wrt = Writer(_table_events_tdf)
+
+        parser = FlattenJsonParser(child_separator='__', flatten_lists=False)
+
+        with wrt:
+            schedules = self.client.schedule.get_schedules()
+            for schedule in schedules:
+                parsed_data = parser.parse_row(schedule)
+                res = {**parsed_data, **parent_dict}
+                wrt.write_row(parser.parse_row(res))
+
     def get_orchestrations_v2(self, parent_dict: dict):
 
         _orchestrations_tdf = self.build_table_definition('orchestrations_v2')
@@ -729,6 +743,10 @@ class Component(CommonInterface):
         if self.parameters.datasets.get('get_storage_buckets'):
             logging.info("Fetching metadata of Storage Buckets")
             self.get_buckets(_p_dict)
+
+        if self.parameters.datasets.get(KEY_GET_SCHEDULES):
+            logging.info("Fetching schedules of configurations")
+            self.get_schedules(_p_dict)
 
     def run(self):
 

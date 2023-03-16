@@ -11,6 +11,7 @@ DEFAULT_TOKEN_EXPIRATION = 26 * 60 * 60  # Default token expiration set to 26 ho
 KEBOOLA_API_URLS = {
     'syrup': 'https://syrup.{REGION}',
     'queue': 'https://queue.{REGION}',
+    'scheduler': 'https://scheduler.{REGION}',
     'storage': 'https://connection.{REGION}/v2/storage',
     'management': 'https://connection.{REGION}/manage',
 }
@@ -487,6 +488,53 @@ class ManagementClient(HttpClient):
             sys.exit(1)
 
 
+class SchedulerClient(HttpClient):
+    LIMIT = 1000
+
+    def __init__(self, region: str, token: str, project: str):
+
+        _default_header = {'x-storageapi-token': token}
+        _url = KEBOOLA_API_URLS['scheduler'].format(REGION=region)
+
+        logging.debug(f"Scheduler URL set to: {_url}")
+
+        super().__init__(base_url=_url, default_http_header=_default_header)
+        self.parameters = SAPIParameters(token, region, project)
+
+    def get_schedules(self, **kwargs) -> list:
+        return self._get_paged_schedules(**kwargs)
+
+    def _get_paged_schedules(self, **kwargs) -> list:
+
+        par_schedules = kwargs
+        par_schedules['limit'] = self.LIMIT
+
+        offset = 0
+        is_complete = False
+        all_jobs = []
+
+        while is_complete is False:
+            par_schedules['offset'] = offset
+
+            rsp_schedules = self.get_raw('schedules', params=par_schedules)
+            sc_schedules, js_schedules = response_splitter(rsp_schedules)
+
+            if sc_schedules == 200:
+                all_jobs += js_schedules
+
+                if len(js_schedules) < self.LIMIT:
+                    is_complete = True
+                    return all_jobs
+
+                else:
+                    offset += self.LIMIT
+
+            else:
+                logging.error(f"Could not download jobs for project {self.parameters.project} in stack "
+                              f"{self.parameters.region}.\nReceived: {sc_schedules} - {js_schedules}.")
+                sys.exit(1)
+
+
 class Client:
 
     def __init__(self):
@@ -494,11 +542,13 @@ class Client:
         self.syrup = None
         self.storage = None
         self.queue = None
+        self.schedule = None
 
     def init_storage_and_syrup_clients(self, region, token, project):
         self.storage = StorageClient(region, token, project)
         self.syrup = SyrupClient(region, token, project)
         self.queue = QueueClient(region, token, project)
+        self.schedule = SchedulerClient(region, token, project)
 
     def init_management_client(self, region, token, organization):
         self.management = ManagementClient(region, token, organization)

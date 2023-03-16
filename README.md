@@ -7,7 +7,8 @@ The extractor utilizes folllowing Keboola APIs:
 1. [Storage API](https://keboola.docs.apiary.io/#),
 2. [Management API](https://keboolamanagementapi.docs.apiary.io/#),
 3. [Orchestrator API](https://keboolaorchestratorv2api.docs.apiary.io/#),
-4. [Queue API](https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.0.0#/);
+4. [Queue API](https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.0.0#/),
+5. [Scheduler API](https://app.swaggerhub.com/apis/odinuv/scheduler/1.0.0);
 
 and allows to download information about:
 
@@ -19,6 +20,7 @@ and allows to download information about:
 6. transformations,
 7. project and organization users.
 8. Table events
+9. Schedules 
 
 ## Configuration
 
@@ -111,6 +113,11 @@ The metadata extractor allows to download an extended set of objects from the Ke
     - **table(s)**: `table-load-events`
     - **requirements**:  a storage token with unlimited access to all buckets
     - **use case**: monitor table activity
+- Get Schedules (`get_schedules`)
+    - **description**: downloads data of all scheduling of components and orchestrations
+    - **table(s)**: `schedules`
+    - **requirements**:  a storage token with unlimited access to all components
+    - **use case**: monitor scheduling of orchestration and components
 
 ## Development
 

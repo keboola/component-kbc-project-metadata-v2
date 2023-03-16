@@ -87,3 +87,8 @@ The metadata extractor allows to download an extended set of objects from the Ke
     - **table(s)**: `table-load-events`
     - **requirements**:  a storage token with unlimited access to all buckets
     - **use case**: monitor table activity
+- Get Schedules (`get_schedules`)
+    - **description**: downloads data of all scheduling of components and orchestrations
+    - **table(s)**: `schedules`
+    - **requirements**:  a storage token with unlimited access to all components
+    - **use case**: monitor scheduling of orchestration and components

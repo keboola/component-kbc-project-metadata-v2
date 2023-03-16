@@ -208,6 +208,13 @@
                     "description": "Downloads information about all imports and exports of tables to workspaces, transformations or CSVs.",
                     "propertyOrder": 4750
                 },
+                "get_schedules": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Schedules",
+                    "description": "Downloads information about all scheduling of components and orchestrations",
+                    "propertyOrder": 4770
+                },
                 "get_transformations_v2": {
                     "type": "boolean",
                     "required": true,
