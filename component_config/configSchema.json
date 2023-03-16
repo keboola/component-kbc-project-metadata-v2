@@ -236,6 +236,13 @@
                     "title": "Get Organization Users",
                     "propertyOrder": 5500,
                     "description": "Downloads information about organization users.<br>The option requires a management access token."
+                },
+                "get_notification": {
+                    "type": "boolean",
+                    "format": "checkbox",
+                    "title": "Get Notifications",
+                    "propertyOrder": 5600,
+                    "description": "Downloads information about all notifications set on components in QueueV2"
                 }
             }
         },

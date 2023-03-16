@@ -258,3 +258,13 @@ FIELDS_R_SCHEDULES = ["id", "token_id", "configuration_id", "configuration_versi
                       "executions"]
 JSON_SCHEDULES = []
 PK_SCHEDULES = ["id", 'region', 'project_id']
+
+
+FIELDS_NOTIFICATIONS = ["id", "component_id", "configuration_id", 'region', 'project_id', "event", "phase_id",
+                        'recipient__channel',
+                        'recipient__address', 'filters']
+FIELDS_R_NOTIFICATIONS = ["id", "component_id", "configuration_id", 'region', 'project_id', "event", "phase_id",
+                          'recipient__channel',
+                          'recipient__address', 'filters']
+JSON_NOTIFICATIONS = []
+PK_NOTIFICATIONS = ["id", 'region', 'project_id']

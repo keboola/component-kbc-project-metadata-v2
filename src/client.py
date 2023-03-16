@@ -13,6 +13,7 @@ KEBOOLA_API_URLS = {
     'queue': 'https://queue.{REGION}',
     'scheduler': 'https://scheduler.{REGION}',
     'storage': 'https://connection.{REGION}/v2/storage',
+    'notification': 'https://notification.{REGION}',
     'management': 'https://connection.{REGION}/manage',
 }
 
@@ -325,6 +326,53 @@ class SyrupClient(HttpClient):
             sys.exit(1)
 
 
+class NotificationClient(HttpClient):
+    LIMIT = 1000
+
+    def __init__(self, region: str, token: str, project: str):
+
+        _default_header = {'x-storageapi-token': token}
+        _url = KEBOOLA_API_URLS['notification'].format(REGION=region)
+
+        logging.debug(f"Notification URL set to: {_url}")
+
+        super().__init__(base_url=_url, default_http_header=_default_header)
+        self.parameters = SAPIParameters(token, region, project)
+
+    def get_notifications(self, **kwargs) -> list:
+        return self._get_paged_notification(**kwargs)
+
+    def _get_paged_notification(self, **kwargs) -> list:
+
+        par_notifications = kwargs
+        par_notifications['limit'] = self.LIMIT
+
+        offset = 0
+        is_complete = False
+        all_notifications = []
+
+        while is_complete is False:
+            par_notifications['offset'] = offset
+
+            rsp_notifications = self.get_raw('project-subscriptions', params=par_notifications)
+            sc_notifications, js_notifications = response_splitter(rsp_notifications)
+
+            if sc_notifications == 200:
+                all_notifications += js_notifications
+
+                if len(js_notifications) < self.LIMIT:
+                    is_complete = True
+                    return all_notifications
+
+                else:
+                    offset += self.LIMIT
+
+            else:
+                logging.error(f"Could not download subscriptions for project {self.parameters.project} in stack "
+                              f"{self.parameters.region}.\nReceived: {all_notifications} - {js_notifications}.")
+                sys.exit(1)
+
+
 class QueueClient(HttpClient):
     LIMIT = 1000
 
@@ -541,12 +589,14 @@ class Client:
         self.management = None
         self.syrup = None
         self.storage = None
+        self.notification = None
         self.queue = None
         self.schedule = None
 
     def init_storage_and_syrup_clients(self, region, token, project):
         self.storage = StorageClient(region, token, project)
         self.syrup = SyrupClient(region, token, project)
+        self.notification = NotificationClient(region, token, project)
         self.queue = QueueClient(region, token, project)
         self.schedule = SchedulerClient(region, token, project)
 

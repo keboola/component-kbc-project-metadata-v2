@@ -80,6 +80,7 @@ KEY_GET_COLUMNS = 'get_columns'
 KEY_GET_WORKSPACE_LOAD_EVENTS = 'get_workspace_load_events'
 KEY_GET_TABLES_LOAD_EVENTS = 'get_tables_load_events'
 KEY_GET_SCHEDULES = "get_schedules"
+KEY_GET_NOTIFICATIONS = 'get_notifications'
 
 # Token keys
 KEY_MAN_TOKEN = '#token'
@@ -691,6 +692,46 @@ class Component(CommonInterface):
                 load_events = self.client.storage.get_table_load_events(table, self.latest_date)
                 wrt.write_rows(load_events, parent_dict)
 
+    def get_notifications(self, parent_dict: dict):
+        _notifications_tdf = self.build_table_definition('notifications')
+        wrt = Writer(_notifications_tdf)
+
+        parser = FlattenJsonParser(child_separator='__', flatten_lists=False)
+
+        with wrt:
+            notifications = self.client.notification.get_notifications()
+            for notification in notifications:
+                parsed_data = parser.parse_row(notification)
+                component_id_dict = self._get_component_id_from_notification(parsed_data)
+                config_id_dict = self._get_configuration_id_from_notification(parsed_data)
+                phase_id_dict = self._get_configuration_id_from_notification(parsed_data)
+                res = {**parsed_data, **parent_dict, **component_id_dict, **config_id_dict, **phase_id_dict}
+                wrt.write_row(parser.parse_row(res))
+
+    @staticmethod
+    def _get_component_id_from_notification(notification_data: dict) -> dict:
+        component_id = None
+        for notification_filter in notification_data.get("filters"):
+            if notification_filter.get("field") == "job.component.id":
+                component_id = notification_filter.get("value")
+        return {"component_id": component_id}
+
+    @staticmethod
+    def _get_configuration_id_from_notification(notification_data: dict) -> dict:
+        configuration_id = None
+        for notification_filter in notification_data.get("filters"):
+            if notification_filter.get("field") == "job.configuration.id":
+                configuration_id = notification_filter.get("value")
+        return {"configuration_id": configuration_id}
+
+    @staticmethod
+    def _get_phase_id_id_from_notification(notification_data: dict) -> dict:
+        phase_id = None
+        for notification_filter in notification_data.get("filters"):
+            if notification_filter.get("field") == "phase.id":
+                phase_id = notification_filter.get("value")
+        return {"phase_id": phase_id}
+
     def get_project_data(self, project_id: str, project_token: str, project_key: str):
 
         self.client.init_storage_and_syrup_clients(self.parameters.region, project_token, project_id)
@@ -739,6 +780,10 @@ class Component(CommonInterface):
         if self.parameters.datasets.get(KEY_GET_TABLES_LOAD_EVENTS):
             logging.info("Fetching metadata of Table Load Events")
             self.get_table_load_events(_p_dict)
+
+        if self.parameters.datasets.get(KEY_GET_NOTIFICATIONS):
+            logging.info("Fetching metadata of Notifications")
+            self.get_notifications(_p_dict)
 
         if self.parameters.datasets.get('get_storage_buckets'):
             logging.info("Fetching metadata of Storage Buckets")
