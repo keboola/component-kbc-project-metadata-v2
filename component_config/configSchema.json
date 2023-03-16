@@ -237,7 +237,7 @@
                     "propertyOrder": 5500,
                     "description": "Downloads information about organization users.<br>The option requires a management access token."
                 },
-                "get_notification": {
+                "get_notifications": {
                     "type": "boolean",
                     "format": "checkbox",
                     "title": "Get Notifications",
