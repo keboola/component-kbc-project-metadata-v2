@@ -1,6 +1,9 @@
 # KBC Metadata extractor
 
-The Keboola metadata extractor downloads information from Keboola's APIs about various objects, users, etc. The metadata obtained by this extractor can be used in addition with the default telemetry data about Keboola projects to bring even more insights into the telemetry of your organization.
+**⚠ NOTE** This extractor is being decomisioned and replaced by the official [Temelemtry Extractor](https://components.keboola.com/components/keboola.ex-telemetry-data) which provides the same data and is actively maintained.
+
+
+The Keboola metadata extractor downloads information from Keboola's APIs about various objects, users, etc.
 
 The extractor utilizes folllowing Keboola APIs:
 
