@@ -1,3 +1,5 @@
+**⚠ NOTE** This extractor is being decomisioned and replaced by the official [Temelemtry Extractor](https://components.keboola.com/components/keboola.ex-telemetry-data) which provides the same data and is actively maintained.
+
 To configure the extractor, either [a management token](https://help.keboola.com/management/account/#tokens) is needed or an [array of storage tokens](https://help.keboola.com/management/project/tokens/) for all projects, for which metadata should be downloaded. Additionally, you'll need to be able to specify the ID of your organization and region, where your projects are located.
 
 A sample of the configuration can be found in the [component repository](https://bitbucket.org/kds_consulting_team/kds-team.ex-kbc-project-metadata-v2/src/master/component_config/sample-config/).
