@@ -1,7 +1,6 @@
 # KBC Metadata extractor
 
-**⚠ NOTE** This extractor is being decomisioned and replaced by the official [Temelemtry Extractor](https://components.keboola.com/components/keboola.ex-telemetry-data) which provides the same data and is actively maintained.
-
+**⚠ NOTE** This extractor is being decommissioned and replaced by the official [Telemetry Extractor](https://components.keboola.com/components/keboola.ex-telemetry-data) which provides the same data and is actively maintained.
 
 The Keboola metadata extractor downloads information from Keboola's APIs about various objects, users, etc.
 

@@ -1,1 +1,1 @@
-Keboola metadata extractor downloads metadata about all objects in your Keboola project.
+**⚠ NOTE** This extractor is being decommissioned and replaced by the official [Telemetry Extractor](https://components.keboola.com/components/keboola.ex-telemetry-data)!
