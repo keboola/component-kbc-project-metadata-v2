@@ -167,13 +167,13 @@ class StorageClient(HttpClient):
 
     def get_tokens_last_events(self, token_id: str) -> list:
 
-        par_events = {'limit': 1}
+        par_events = {'limit': 1, 'forceUuid': 'true'}
 
         rsp_events = self.get_raw(f'tokens/{token_id}/events', params=par_events)
         sc_events, js_events = response_splitter(rsp_events)
 
         if sc_events == 200:
-            return js_events
+            return self._ensure_event_id(js_events)
 
         else:
             logging.error(f"Could not download last token event for token {token_id} in project "
@@ -198,39 +198,48 @@ class StorageClient(HttpClient):
 
         return self._get_paged_events(f'tables/{table_id}/events', **kwargs)
 
+    @staticmethod
+    def _ensure_event_id(events: list) -> list:
+        """Ensure each event in the list has an 'id' field, using 'uuid' if necessary."""
+        for event in events:
+            if 'id' not in event or event['id'] is None:
+                event['id'] = event['uuid']
+        return events
+
     def _get_paged_events(self, url: str, **kwargs):
 
         par_events = kwargs
         par_events['limit'] = 1000
+        # Always force UUID usage
+        par_events['forceUuid'] = 'true'
 
-        offset = 0
         is_complete = False
         all_events = []
-        max_id = 0
+        max_id = None  # uses uuid
 
         while not is_complete:
             par_events['offset'] = 0
             if max_id:
                 par_events.pop('offset', None)
-                par_events['maxId'] = offset
+                par_events['maxId'] = max_id
 
             rsp_events = self.get_raw(url, params=par_events)
             sc_events, js_events = response_splitter(rsp_events)
 
             if sc_events == 200:
-
                 all_events += js_events
-                if js_events and max_id != js_events[-1:][0]['id']:
-                    max_id = js_events[-1:][0]['id']
+                if js_events and max_id != js_events[-1:][0]['uuid']:
+                    max_id = js_events[-1:][0]['uuid']
 
-                if not js_events or max_id == js_events[-1:][0]['id']:
+                if not js_events or max_id == js_events[-1:][0]['uuid']:
                     is_complete = True
-                    return all_events
+                    return self._ensure_event_id(all_events)
 
             else:
-                logging.error(f"Could not download events for url {url} in project {self.parameters.project} ",
+                logging.error(f"Could not download events for url {url} in project {self.parameters.project} "
                               f"in stack {self.parameters.region}.\nReceived: {sc_events} - {js_events}.")
                 sys.exit(1)
+        return None
 
 
 class SyrupClient(HttpClient):
