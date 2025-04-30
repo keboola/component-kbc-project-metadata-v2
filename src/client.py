@@ -198,7 +198,8 @@ class StorageClient(HttpClient):
 
         return self._get_paged_events(f'tables/{table_id}/events', **kwargs)
 
-    def _ensure_event_id(self, events: list) -> list:
+    @staticmethod
+    def _ensure_event_id(events: list) -> list:
         """Ensure each event in the list has an 'id' field, using 'uuid' if necessary."""
         for event in events:
             if 'id' not in event or event['id'] is None:
@@ -238,6 +239,7 @@ class StorageClient(HttpClient):
                 logging.error(f"Could not download events for url {url} in project {self.parameters.project} "
                               f"in stack {self.parameters.region}.\nReceived: {sc_events} - {js_events}.")
                 sys.exit(1)
+        return None
 
 
 class SyrupClient(HttpClient):
