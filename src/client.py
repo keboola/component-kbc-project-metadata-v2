@@ -203,7 +203,7 @@ class StorageClient(HttpClient):
         for event in events:
             if 'id' not in event or event['id'] is None:
                 event['id'] = event['uuid']
-        return self._ensure_event_id(events)
+        return events
 
     def _get_paged_events(self, url: str, **kwargs):
 
